@@ -19,9 +19,9 @@ export default function FeaturedWebsites({
     <section id="featured-section">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
-          <h3 className="font-extrabold text-slate-900 dark:text-white text-xl tracking-tight">Featured Websites</h3>
+          <h3 className="font-extrabold text-slate-900 dark:text-white text-xl tracking-tight">Sara veb-saytlar</h3>
           <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-semibold px-2.5 py-1 rounded-full border border-transparent dark:border-slate-700/60">
-            {websites.length} {websites.length === 1 ? 'site' : 'sites'}
+            {websites.length} ta sayt
           </span>
         </div>
 
@@ -37,7 +37,7 @@ export default function FeaturedWebsites({
               }`}
             >
               <Sparkles className="w-3 h-3" />
-              Popular
+              Ommabop
             </button>
             <button 
               onClick={() => setTab('top_voted')} 
@@ -48,7 +48,7 @@ export default function FeaturedWebsites({
               }`}
             >
               <Heart className="w-3 h-3 text-rose-500" />
-              Top Voted
+              Eng ko'p ovoz olgan
             </button>
             <button 
               onClick={() => setTab('trending')} 
@@ -59,7 +59,7 @@ export default function FeaturedWebsites({
               }`}
             >
               <Flame className="w-3 h-3 text-amber-500" />
-              Trending
+              Trendda
             </button>
             <button 
               onClick={() => setTab('new')} 
@@ -70,7 +70,7 @@ export default function FeaturedWebsites({
               }`}
             >
               <Clock className="w-3 h-3" />
-              New
+              Yangi
             </button>
           </div>
 
@@ -78,7 +78,7 @@ export default function FeaturedWebsites({
             onClick={resetFilters} 
             className="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-semibold text-xs sm:text-sm flex items-center gap-1 group ml-1 transition cursor-pointer flex-shrink-0"
           >
-            All <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            Barchasi <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
       </div>

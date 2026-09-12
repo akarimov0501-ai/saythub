@@ -54,7 +54,7 @@ export default function Categories({ websites = [], currentFilterCategory = 'all
 
   const getCategoryCount = (catName) => {
     if (!websites || !Array.isArray(websites) || websites.length === 0) {
-      return '0 sites';
+      return '0 ta sayt';
     }
     const count = websites.filter(w => {
       const wCat = (w.category || '').toLowerCase();
@@ -64,7 +64,7 @@ export default function Categories({ websites = [], currentFilterCategory = 'all
       }
       return wCat === cName;
     }).length;
-    return `${count} ${count === 1 ? 'site' : 'sites'}`;
+    return `${count} ta sayt`;
   };
 
   const handleSelectCategory = (catName) => {
@@ -84,7 +84,7 @@ export default function Categories({ websites = [], currentFilterCategory = 'all
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <h3 className="font-extrabold text-slate-900 dark:text-white text-xl tracking-tight">
-            Popular Categories
+            Ommabop kategoriyalar
           </h3>
           {currentFilterCategory !== 'all' && (
             <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 text-xs font-semibold border border-sky-200 dark:border-sky-800">
@@ -108,7 +108,7 @@ export default function Categories({ websites = [], currentFilterCategory = 'all
           }} 
           className="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-semibold text-xs sm:text-sm flex items-center gap-1 group cursor-pointer transition"
         >
-          View All <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+          Barchasi <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
       
@@ -159,7 +159,7 @@ export default function Categories({ websites = [], currentFilterCategory = 'all
           </div>
           <div className="flex items-center gap-1 mb-0.5">
             <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm whitespace-nowrap">
-              More
+              Boshqalar
             </h4>
             {isExpanded ? (
               <ChevronUp className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
@@ -170,7 +170,7 @@ export default function Categories({ websites = [], currentFilterCategory = 'all
           <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
             {isExpanded 
               ? 'Yashirish' 
-              : (isSecondaryActive ? currentFilterCategory : `+${SECONDARY_CATEGORIES.length} categories`)}
+              : (isSecondaryActive ? currentFilterCategory : `+${SECONDARY_CATEGORIES.length} toifalar`)}
           </span>
         </div>
       </div>

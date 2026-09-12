@@ -6,6 +6,7 @@ import {
   doc, 
   deleteDoc, 
   query, 
+  where,
   orderBy,
   onSnapshot 
 } from 'firebase/firestore';
@@ -171,8 +172,8 @@ export const db = {
     }
   },
 
-  // Get Favorites
-  async getFavorites() {
+  // Get Favorites (Strictly per user / local storage)
+  async getFavorites(userId = null) {
     let localFavs = [];
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_FAVORITES_KEY);
@@ -181,9 +182,14 @@ export const db = {
       console.error(e);
     }
 
+    if (!userId) {
+      return localFavs;
+    }
+
     try {
       const favRef = collection(firestore, 'user_favorites');
-      const snap = await getDocs(favRef);
+      const q = query(favRef, where('userId', '==', userId));
+      const snap = await getDocs(q);
       if (!snap.empty) {
         const cloudFavs = snap.docs.map((d) => d.data().siteId);
         return Array.from(new Set([...localFavs, ...cloudFavs]));
@@ -196,7 +202,7 @@ export const db = {
   },
 
   // Toggle Favorite
-  async toggleFavorite(siteId, willBeFavorite) {
+  async toggleFavorite(siteId, willBeFavorite, userId = null) {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_FAVORITES_KEY);
       let list = saved ? JSON.parse(saved) : [];
@@ -210,19 +216,21 @@ export const db = {
       console.error(e);
     }
 
-    try {
-      const favDocRef = doc(firestore, 'user_favorites', `anon_${siteId}`);
-      if (willBeFavorite) {
-        await setDoc(favDocRef, {
-          siteId,
-          userId: 'anonymous',
-          createdAt: new Date().toISOString()
-        });
-      } else {
-        await deleteDoc(favDocRef);
+    if (userId) {
+      try {
+        const favDocRef = doc(firestore, 'user_favorites', `${userId}_${siteId}`);
+        if (willBeFavorite) {
+          await setDoc(favDocRef, {
+            siteId,
+            userId,
+            createdAt: new Date().toISOString()
+          });
+        } else {
+          await deleteDoc(favDocRef);
+        }
+      } catch (err) {
+        console.warn('Firestore fav toggle error:', err);
       }
-    } catch (err) {
-      console.warn('Firestore fav toggle error:', err);
     }
   },
 

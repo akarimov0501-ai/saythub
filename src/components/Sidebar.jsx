@@ -67,7 +67,7 @@ export default function Sidebar({
                 <h1 className="font-extrabold text-slate-900 dark:text-white text-lg tracking-tight leading-tight">
                   LinkHub
                 </h1>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">All useful sites in one place</p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Barcha foydali saytlar bir joyda</p>
               </div>
             </div>
 
@@ -91,31 +91,31 @@ export default function Sidebar({
                 closeMobileSidebar();
               }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
-                currentTab !== 'favorites_only' && currentFilterCategory === 'all'
+                currentTab === 'popular' && currentFilterCategory === 'all'
                   ? 'bg-sky-50 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400 dark:border dark:border-sky-500/30 shadow-sm'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 dark:hover:text-slate-200'
               }`}
             >
               <Home className="w-4 h-4" />
-              Home
+              Bosh sahifa
             </button>
 
             <button
               onClick={() => {
-                setTab('popular');
+                setTab('explore');
                 setFilterCategory('all');
                 const sec = document.getElementById('featured-section');
                 if (sec) sec.scrollIntoView({ behavior: 'smooth' });
                 closeMobileSidebar();
               }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                currentTab === 'popular' && currentFilterCategory === 'all'
+                currentTab === 'explore'
                   ? 'bg-sky-50 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400 dark:border dark:border-sky-500/30 font-bold shadow-sm'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 dark:hover:text-slate-200'
               }`}
             >
               <Compass className="w-4 h-4" />
-              Explore
+              Kashf qilish
             </button>
 
             <a
@@ -124,7 +124,7 @@ export default function Sidebar({
               className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 dark:hover:text-slate-200 transition-colors"
             >
               <LayoutGrid className="w-4 h-4" />
-              Categories
+              Kategoriyalar
             </a>
 
             <button
@@ -141,7 +141,7 @@ export default function Sidebar({
               }`}
             >
               <FolderArchive className="w-4 h-4" />
-              Collections
+              To'plamlar
             </button>
 
             <button
@@ -160,7 +160,7 @@ export default function Sidebar({
             >
               <div className="flex items-center gap-3">
                 <Heart className={`w-4 h-4 ${currentTab === 'favorites_only' ? 'fill-sky-600 text-sky-600 dark:fill-sky-400 dark:text-sky-400' : ''}`} />
-                Favorites
+                Sevimlilar
               </div>
               {favoritesCount > 0 && (
                 <span className="text-xs bg-sky-500 text-white font-bold px-2 py-0.5 rounded-full">
@@ -183,14 +183,14 @@ export default function Sidebar({
               }`}
             >
               <Clock className="w-4 h-4" />
-              Recently Added
+              Yangi qo'shilganlar
             </button>
           </nav>
 
           {/* My Space Section */}
           <div className="pt-2">
             <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-3 mb-2">
-              My Space
+              Mening maydonim
             </h3>
             <div className="space-y-1">
               <button
@@ -207,7 +207,7 @@ export default function Sidebar({
                 }`}
               >
                 <FileText className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-                My Collection
+                Mening to'plamim
               </button>
 
               <button
@@ -224,7 +224,7 @@ export default function Sidebar({
                 }`}
               >
                 <Bookmark className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-                Saved Links
+                Saqlangan havolalar
               </button>
 
               <button
@@ -235,7 +235,7 @@ export default function Sidebar({
                 className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 dark:hover:text-slate-200 transition-colors cursor-pointer"
               >
                 <Folder className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-                Custom Folders
+                Maxsus jildlar
               </button>
 
               <button
@@ -256,9 +256,9 @@ export default function Sidebar({
             <div className="w-7 h-7 rounded-xl bg-slate-800 border border-slate-700/80 flex items-center justify-center text-sky-400 mb-3 shadow-inner">
               <Sparkles className="w-4 h-4 animate-subtle-pulse" />
             </div>
-            <h4 className="font-bold text-[15px] leading-snug mb-1">Organize the web you love.</h4>
+            <h4 className="font-bold text-[15px] leading-snug mb-1">Foydali internet olami.</h4>
             <p className="text-xs text-slate-400 leading-relaxed mb-3.5">
-              Save, sort and access your favorite websites — faster.
+              Eng sara saytlarni saqlang, saralang va bir zumda toping.
             </p>
             <button
               onClick={() => {
@@ -267,7 +267,7 @@ export default function Sidebar({
               }}
               className="w-full py-2.5 px-3 bg-white hover:bg-slate-100 text-slate-900 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm group cursor-pointer"
             >
-              Create Collection
+              To'plam yaratish
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>

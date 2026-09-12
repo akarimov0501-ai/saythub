@@ -15,12 +15,12 @@ export default function LatestAdditions({ websites = [], favorites, toggleBookma
   return (
     <section id="latest-section" className="pt-2">
       <div className="flex items-center justify-between mb-5">
-        <h3 className="font-extrabold text-slate-900 dark:text-white text-xl tracking-tight">Latest Additions</h3>
+        <h3 className="font-extrabold text-slate-900 dark:text-white text-xl tracking-tight">So'nggi qo'shilganlar</h3>
         <button 
           onClick={() => setTab('new')} 
           className="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-semibold text-xs sm:text-sm flex items-center gap-1 group transition cursor-pointer"
         >
-          View All <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+          Barchasi <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
 

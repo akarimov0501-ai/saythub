@@ -87,7 +87,7 @@ export default function App() {
         setIsLoading(true);
         const [sites, favs, subs] = await Promise.all([
           db.getWebsites(),
-          db.getFavorites(),
+          db.getFavorites(user?.uid),
           db.getSubmissions()
         ]);
         if (sites) {
@@ -95,6 +95,8 @@ export default function App() {
         }
         if (favs) {
           setFavorites(favs);
+        } else {
+          setFavorites([]);
         }
         if (subs) {
           setSubmissions(subs);
@@ -108,7 +110,7 @@ export default function App() {
     loadData();
 
     // Firebase Auth State Listener
-    const unsubscribeAuth = onAuthStateChanged(auth, (fbUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (fbUser) => {
       if (fbUser) {
         const userData = {
           name: fbUser.displayName || 'Google User',
@@ -119,6 +121,12 @@ export default function App() {
         };
         setUser(userData);
         localStorage.setItem('linkhub_user', JSON.stringify(userData));
+        try {
+          const userFavs = await db.getFavorites(fbUser.uid);
+          if (userFavs) setFavorites(userFavs);
+        } catch (e) {
+          console.error(e);
+        }
       }
     });
 
@@ -171,11 +179,11 @@ export default function App() {
     );
 
     triggerToast(
-      willBeFav ? "Site saved to bookmarks!" : "Site removed from bookmarks",
-      willBeFav ? '★' : '✕'
+      willBeFav ? "Sayt sevimlilarga saqlandi!" : "Sayt sevimlilardan olib tashlandi",
+      willBeFav ? '★' : 'ℹ'
     );
 
-    await db.toggleFavorite(id, willBeFav);
+    await db.toggleFavorite(id, willBeFav, user?.uid);
   };
 
   // Community Submission: Submit new website
@@ -572,11 +580,11 @@ export default function App() {
 
         {/* Footer (Clean - no admin button) */}
         <footer className="mt-auto border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#0a0f1d] py-6 px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 dark:text-slate-500 gap-3 transition-colors mb-16 md:mb-0">
-          <p>© 2026 LinkHub. All useful websites curated in one place.</p>
+          <p>© 2026 LinkHub. Barcha foydali saytlar bir joyda.</p>
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80 font-medium text-[11px]">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              Live Sync
+              Jonli sinxronizatsiya
             </span>
           </div>
         </footer>
@@ -594,7 +602,7 @@ export default function App() {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
-              currentTab !== 'favorites_only' && currentFilterCategory === 'all' && !searchQuery
+              currentTab === 'popular' && currentFilterCategory === 'all' && !searchQuery
                 ? 'text-sky-600 dark:text-sky-400 font-bold'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium'
             }`}
@@ -606,12 +614,13 @@ export default function App() {
           {/* 2. Explore */}
           <button
             onClick={() => {
-              setTab('popular');
+              setTab('explore');
+              setFilterCategory('all');
               const sec = document.getElementById('featured-section');
               if (sec) sec.scrollIntoView({ behavior: 'smooth' });
             }}
             className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
-              currentTab === 'popular' && (currentFilterCategory !== 'all' || searchQuery)
+              currentTab === 'explore'
                 ? 'text-sky-600 dark:text-sky-400 font-bold'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium'
             }`}
