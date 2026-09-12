@@ -167,5 +167,149 @@ export const db = {
     } catch (err) {
       console.warn('Firestore fav toggle error:', err);
     }
+  },
+
+  // Submit a website by community / visitor
+  async submitWebsite(submissionData) {
+    const id = 'sub-' + Date.now();
+    const newSubmission = {
+      id,
+      name: submissionData.name,
+      url: submissionData.url.startsWith('http') ? submissionData.url : `https://${submissionData.url}`,
+      logoUrl: submissionData.logoUrl || '',
+      category: submissionData.category || 'AI',
+      description: submissionData.description || 'Foydalanuvchi tomonidan taklif etilgan foydali sayt.',
+      tags: submissionData.tags || [submissionData.category || 'AI'],
+      submitterName: submissionData.submitterName || 'Foydalanuvchi',
+      submitterEmail: submissionData.submitterEmail || '',
+      submitterAvatar: submissionData.submitterAvatar || '',
+      status: 'pending', // pending | approved | rejected
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      await setDoc(doc(firestore, 'submissions', id), newSubmission);
+    } catch (err) {
+      console.warn('Firestore submission error, storing locally:', err);
+    }
+
+    try {
+      const saved = localStorage.getItem('linkhub_submissions');
+      const list = saved ? JSON.parse(saved) : [];
+      localStorage.setItem('linkhub_submissions', JSON.stringify([newSubmission, ...list]));
+    } catch (e) {
+      console.error(e);
+    }
+
+    return newSubmission;
+  },
+
+  // Fetch all submissions for Admin Moderation
+  async getSubmissions() {
+    try {
+      const subRef = collection(firestore, 'submissions');
+      const q = query(subRef, orderBy('createdAt', 'desc'));
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        const subs = [];
+        snapshot.forEach((docSnap) => {
+          subs.push({
+            id: docSnap.id,
+            ...docSnap.data()
+          });
+        });
+        return subs;
+      }
+    } catch (err) {
+      console.warn('Firestore getSubmissions error, using local fallback:', err);
+    }
+
+    try {
+      const saved = localStorage.getItem('linkhub_submissions');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error(e);
+    }
+
+    return [];
+  },
+
+  // Approve submission (creates site in websites catalog and marks submission as approved)
+  async approveSubmission(submissionId, sitePayload) {
+    // 1. Create active website in catalog
+    const createdSite = await this.createWebsite({
+      ...sitePayload,
+      new: true,
+      popular: false,
+      trending: false
+    });
+
+    // 2. Update status in submissions collection
+    try {
+      await setDoc(doc(firestore, 'submissions', submissionId), {
+        status: 'approved',
+        approvedAt: new Date().toISOString()
+      }, { merge: true });
+    } catch (err) {
+      console.error('Firestore update submission status error:', err);
+    }
+
+    try {
+      const saved = localStorage.getItem('linkhub_submissions');
+      if (saved) {
+        const list = JSON.parse(saved).map(s => 
+          s.id === submissionId ? { ...s, status: 'approved', approvedAt: new Date().toISOString() } : s
+        );
+        localStorage.setItem('linkhub_submissions', JSON.stringify(list));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
+    return createdSite;
+  },
+
+  // Reject submission
+  async rejectSubmission(submissionId) {
+    try {
+      await setDoc(doc(firestore, 'submissions', submissionId), {
+        status: 'rejected',
+        rejectedAt: new Date().toISOString()
+      }, { merge: true });
+    } catch (err) {
+      console.error('Firestore reject submission error:', err);
+    }
+
+    try {
+      const saved = localStorage.getItem('linkhub_submissions');
+      if (saved) {
+        const list = JSON.parse(saved).map(s => 
+          s.id === submissionId ? { ...s, status: 'rejected', rejectedAt: new Date().toISOString() } : s
+        );
+        localStorage.setItem('linkhub_submissions', JSON.stringify(list));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  },
+
+  // Delete submission
+  async deleteSubmission(submissionId) {
+    try {
+      await deleteDoc(doc(firestore, 'submissions', submissionId));
+    } catch (err) {
+      console.error('Firestore delete submission error:', err);
+    }
+
+    try {
+      const saved = localStorage.getItem('linkhub_submissions');
+      if (saved) {
+        const list = JSON.parse(saved).filter(s => s.id !== submissionId);
+        localStorage.setItem('linkhub_submissions', JSON.stringify(list));
+      }
+    } catch (e) {
+      console.error(e);
+    }
   }
 };

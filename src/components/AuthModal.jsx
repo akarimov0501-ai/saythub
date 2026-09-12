@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Sparkles, LogIn, LogOut, Check, Mail, Lock } from 'lucide-react';
+import { auth, googleProvider, signInWithPopup, signOut } from '../lib/firebase';
 
 export default function AuthModal({ 
   isOpen, 
@@ -13,6 +14,42 @@ export default function AuthModal({
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
+
+  // Real Firebase Google Sign-In with popup
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const fbUser = result.user;
+      const userData = {
+        name: fbUser.displayName || 'Google User',
+        email: fbUser.email,
+        avatar: fbUser.photoURL || (fbUser.displayName || 'U').slice(0, 2).toUpperCase(),
+        uid: fbUser.uid,
+        role: 'Member'
+      };
+      setUser(userData);
+      localStorage.setItem('linkhub_user', JSON.stringify(userData));
+      triggerToast(`Xush kelibsiz, ${userData.name}!`, '✓');
+      onClose();
+    } catch (err) {
+      console.warn("Google Sign-In popup error:", err);
+      if (err.code === 'auth/popup-closed-by-user') {
+        // User closed popup
+      } else {
+        triggerToast("Google orqali kirishda xatolik: Demo hisob bilan kirilmoqda", 'ℹ');
+        // Graceful fallback for environments with blocked popups
+        handleDemoSignIn({
+          name: 'Azizbek Karimov',
+          email: 'akarimov0501@gmail.com',
+          avatar: 'AK',
+          role: 'Creator'
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDemoSignIn = (demoUser) => {
     setLoading(true);
@@ -40,7 +77,12 @@ export default function AuthModal({
     handleDemoSignIn(newUser);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.warn("Firebase sign out error:", e);
+    }
     setUser(null);
     localStorage.removeItem('linkhub_user');
     triggerToast('Hisobdan muvaffaqiyatli chiqildi', '✓');
@@ -97,12 +139,7 @@ export default function AuthModal({
             </div>
 
             <button
-              onClick={() => handleDemoSignIn({
-                name: 'Azizbek Karimov',
-                email: 'akarimov0501@gmail.com',
-                avatar: 'AK',
-                role: 'Creator'
-              })}
+              onClick={handleGoogleSignIn}
               disabled={loading}
               className="w-full py-2.5 px-4 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-sm"
             >

@@ -11,12 +11,18 @@ import {
 } from 'lucide-react';
 import AdminWebsites from './AdminWebsites';
 import AdminCategories from './AdminCategories';
+import AdminSubmissions from './AdminSubmissions';
+import { Send } from 'lucide-react';
 
 export default function AdminLayout({ 
   websites, 
+  submissions = [],
   onAddWebsite, 
   onUpdateWebsite, 
   onDeleteWebsite, 
+  onApproveSubmission,
+  onRejectSubmission,
+  onDeleteSubmission,
   onExitAdmin 
 }) {
   const [activeTab, setActiveTab] = useState('websites');
@@ -154,6 +160,21 @@ export default function AdminLayout({
             <Layers className="w-4 h-4" />
             Categories
           </button>
+
+          <button 
+            onClick={() => setActiveTab('submissions')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+              activeTab === 'submissions' 
+                ? 'bg-slate-900 text-white shadow-sm' 
+                : 'text-slate-600 hover:bg-slate-200/60'
+            }`}
+          >
+            <Send className="w-4 h-4" />
+            Submissions ({submissions.length})
+            {submissions.filter(s => s.status === 'pending').length > 0 && (
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            )}
+          </button>
         </div>
 
         {/* Active Tab View */}
@@ -168,6 +189,15 @@ export default function AdminLayout({
 
         {activeTab === 'categories' && (
           <AdminCategories websites={websites} />
+        )}
+
+        {activeTab === 'submissions' && (
+          <AdminSubmissions 
+            submissions={submissions}
+            onApproveSubmission={onApproveSubmission}
+            onRejectSubmission={onRejectSubmission}
+            onDeleteSubmission={onDeleteSubmission}
+          />
         )}
       </main>
 

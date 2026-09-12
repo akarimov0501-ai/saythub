@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ChevronDown, Sun, Moon } from 'lucide-react';
+import { Search, ChevronDown, Sun, Moon, Send } from 'lucide-react';
 
 export default function Hero({ 
   searchQuery, 
@@ -11,6 +11,7 @@ export default function Hero({
   toggleTheme,
   user,
   onOpenAuth,
+  onOpenSubmitModal,
   setTab
 }) {
   const [activeNav, setActiveNav] = useState('discover');
@@ -157,6 +158,17 @@ export default function Hero({
             )}
             <span className="w-px h-3 bg-white/20"></span>
             <span className="text-[11px] text-slate-300 leading-none">✦</span>
+          </button>
+
+          {/* Submit Tool Button */}
+          <button 
+            onClick={onOpenSubmitModal}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white shadow-md shadow-sky-500/20 transition active:scale-95"
+            title="Hamjamiyat bilan yangi foydali saytni ulashing"
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Submit Tool</span>
+            <span className="sm:hidden">Taklif</span>
           </button>
 
           {/* Sign In / Profile Button */}

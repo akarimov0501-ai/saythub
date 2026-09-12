@@ -15,7 +15,8 @@ import {
   User,
   Plus,
   Moon,
-  HelpCircle
+  HelpCircle,
+  Send
 } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -25,6 +26,7 @@ export default function Sidebar({
   setFilterCategory, 
   favoritesCount, 
   openCreateModal,
+  openSubmitModal,
   isMobileOpen,
   closeMobileSidebar,
   user,
@@ -223,6 +225,17 @@ export default function Sidebar({
                 <Folder className="w-4 h-4 text-slate-400" />
                 Custom Folders
               </button>
+
+              <button
+                onClick={() => {
+                  openSubmitModal();
+                  closeMobileSidebar();
+                }}
+                className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-semibold text-sky-600 hover:bg-sky-50 transition-colors"
+              >
+                <Send className="w-4 h-4 text-sky-500" />
+                Sayt taklif qilish
+              </button>
             </div>
           </div>
 
@@ -301,6 +314,17 @@ export default function Sidebar({
                 >
                   <Plus className="w-4 h-4 text-indigo-500" />
                   Sayt yoki to'plam qo'shish
+                </button>
+
+                <button 
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    openSubmitModal();
+                  }}
+                  className="w-full text-left px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2.5 text-slate-700 font-semibold"
+                >
+                  <Send className="w-4 h-4 text-sky-500" />
+                  Sayt taklif qilish (Submit Tool)
                 </button>
 
                 <button 

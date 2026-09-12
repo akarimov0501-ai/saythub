@@ -7,19 +7,22 @@ import Hero from './components/Hero';
 import Categories from './components/Categories';
 import FeaturedWebsites from './components/FeaturedWebsites';
 import LatestAdditions from './components/LatestAdditions';
-import CreateModal from './components/CreateModal';
 import Toast from './components/Toast';
 import AdminLayout from './admin/AdminLayout';
 import AuthModal from './components/AuthModal';
+import SubmitModal from './components/SubmitModal';
+import { auth, onAuthStateChanged } from './lib/firebase';
 
 export default function App() {
   const [allWebsites, setAllWebsites] = useState(initialWebsites);
   const [favorites, setFavorites] = useState([]);
+  const [submissions, setSubmissions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentFilterCategory, setFilterCategory] = useState('all');
   const [currentTab, setTab] = useState('popular');
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isSubmitModalOpen, setSubmitModalOpen] = useState(false);
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [toast, setToast] = useState(null);
@@ -71,15 +74,19 @@ export default function App() {
     async function loadData() {
       try {
         setIsLoading(true);
-        const [sites, favs] = await Promise.all([
+        const [sites, favs, subs] = await Promise.all([
           db.getWebsites(),
-          db.getFavorites()
+          db.getFavorites(),
+          db.getSubmissions()
         ]);
         if (sites) {
           setAllWebsites(sites);
         }
         if (favs) {
           setFavorites(favs);
+        }
+        if (subs) {
+          setSubmissions(subs);
         }
       } catch (err) {
         console.error('Data loading error:', err);
@@ -89,6 +96,21 @@ export default function App() {
     }
     loadData();
 
+    // Firebase Auth State Listener
+    const unsubscribeAuth = onAuthStateChanged(auth, (fbUser) => {
+      if (fbUser) {
+        const userData = {
+          name: fbUser.displayName || 'Google User',
+          email: fbUser.email,
+          avatar: fbUser.photoURL || (fbUser.displayName || 'U').slice(0, 2).toUpperCase(),
+          uid: fbUser.uid,
+          role: 'Member'
+        };
+        setUser(userData);
+        localStorage.setItem('linkhub_user', JSON.stringify(userData));
+      }
+    });
+
     // Listen for URL route changes (popstate & hashchange)
     const handleRoute = () => {
       setIsAdminView(checkIsAdmin());
@@ -97,6 +119,7 @@ export default function App() {
     window.addEventListener('hashchange', handleRoute);
     window.addEventListener('popstate', handleRoute);
     return () => {
+      unsubscribeAuth();
       window.removeEventListener('hashchange', handleRoute);
       window.removeEventListener('popstate', handleRoute);
     };
@@ -125,6 +148,58 @@ export default function App() {
     );
 
     await db.toggleFavorite(id, willBeFav);
+  };
+
+  // Community Submission: Submit new website
+  const handleSubmitWebsite = async (submissionData) => {
+    try {
+      const newSub = await db.submitWebsite(submissionData);
+      setSubmissions((prev) => [newSub, ...prev]);
+      triggerToast("Sayt taklifi muvaffaqiyatli qabul qilindi!", '✓');
+    } catch (err) {
+      console.error(err);
+      triggerToast("Arizani yuborishda xatolik", '✕');
+    }
+  };
+
+  // Admin: Approve submission
+  const handleApproveSubmission = async (submissionId, sitePayload) => {
+    try {
+      const approvedSite = await db.approveSubmission(submissionId, sitePayload);
+      setAllWebsites((prev) => [approvedSite, ...prev]);
+      setSubmissions((prev) => 
+        prev.map(s => s.id === submissionId ? { ...s, status: 'approved' } : s)
+      );
+      triggerToast(`"${sitePayload.name}" sayti tasdiqlandi va katalogga qo'shildi!`, '✓');
+    } catch (err) {
+      console.error(err);
+      triggerToast("Arizani tasdiqlashda xatolik", '✕');
+    }
+  };
+
+  // Admin: Reject submission
+  const handleRejectSubmission = async (submissionId) => {
+    try {
+      await db.rejectSubmission(submissionId);
+      setSubmissions((prev) => 
+        prev.map(s => s.id === submissionId ? { ...s, status: 'rejected' } : s)
+      );
+      triggerToast("Ariza rad etildi", 'ℹ');
+    } catch (err) {
+      console.error(err);
+      triggerToast("Xatolik yuz berdi", '✕');
+    }
+  };
+
+  // Admin: Delete submission
+  const handleDeleteSubmission = async (submissionId) => {
+    try {
+      await db.deleteSubmission(submissionId);
+      setSubmissions((prev) => prev.filter(s => s.id !== submissionId));
+      triggerToast("Ariza o'chirildi", '✓');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Add Custom Website / Collection (from visitor modal or admin)
@@ -221,6 +296,7 @@ export default function App() {
       if (e.key === 'Escape') {
         setCreateModalOpen(false);
         setAuthModalOpen(false);
+        setSubmitModalOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -233,9 +309,13 @@ export default function App() {
       <>
         <AdminLayout
           websites={allWebsites}
+          submissions={submissions}
           onAddWebsite={handleAddWebsite}
           onUpdateWebsite={handleUpdateWebsite}
           onDeleteWebsite={handleDeleteWebsite}
+          onApproveSubmission={handleApproveSubmission}
+          onRejectSubmission={handleRejectSubmission}
+          onDeleteSubmission={handleDeleteSubmission}
           onExitAdmin={() => {
             setIsAdminView(false);
             window.location.hash = '';
@@ -259,6 +339,7 @@ export default function App() {
         setFilterCategory={setFilterCategory}
         favoritesCount={favorites.length}
         openCreateModal={() => setCreateModalOpen(true)}
+        openSubmitModal={() => setSubmitModalOpen(true)}
         isMobileOpen={isMobileSidebarOpen}
         closeMobileSidebar={() => setMobileSidebarOpen(false)}
         user={user}
@@ -281,11 +362,11 @@ export default function App() {
             <span className="font-bold text-base">LinkHub</span>
           </div>
           <button 
-            onClick={() => setCreateModalOpen(true)} 
+            onClick={() => setSubmitModalOpen(true)} 
             className="px-3 py-1 bg-sky-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1"
           >
             <Plus className="w-3.5 h-3.5" />
-            Add Site
+            Submit
           </button>
         </div>
 
@@ -300,6 +381,7 @@ export default function App() {
           toggleTheme={toggleTheme}
           user={user}
           onOpenAuth={() => setAuthModalOpen(true)}
+          onOpenSubmitModal={() => setSubmitModalOpen(true)}
           setTab={setTab}
         />
 
@@ -342,11 +424,20 @@ export default function App() {
         </footer>
       </main>
 
-      {/* Create Modal Dialog */}
+      {/* Create Modal Dialog (Custom collection) */}
       <CreateModal
         isOpen={isCreateModalOpen}
         onClose={() => setCreateModalOpen(false)}
         onAddWebsite={handleAddWebsite}
+      />
+
+      {/* Community Submit Tool Modal */}
+      <SubmitModal
+        isOpen={isSubmitModalOpen}
+        onClose={() => setSubmitModalOpen(false)}
+        onSubmitWebsite={handleSubmitWebsite}
+        user={user}
+        triggerToast={triggerToast}
       />
 
       {/* User Auth / Profile Modal */}
