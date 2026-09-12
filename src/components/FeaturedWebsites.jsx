@@ -26,11 +26,11 @@ export default function FeaturedWebsites({
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="bg-slate-100 dark:bg-slate-800/80 p-1 rounded-full flex items-center gap-1 border border-slate-200/50 dark:border-slate-700/60 overflow-x-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end overflow-hidden">
+          <div className="bg-slate-100 dark:bg-slate-800/80 p-1 rounded-full flex items-center gap-1 border border-slate-200/50 dark:border-slate-700/60 overflow-x-auto no-scrollbar flex-nowrap flex-1 sm:flex-initial">
             <button 
               onClick={() => setTab('popular')} 
-              className={`px-3.5 py-1.5 rounded-full text-xs transition cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-full text-xs transition cursor-pointer flex items-center gap-1.5 flex-shrink-0 ${
                 currentTab === 'popular' 
                   ? 'font-bold bg-slate-900 text-white dark:bg-sky-600 dark:text-white shadow-sm' 
                   : 'font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -41,7 +41,7 @@ export default function FeaturedWebsites({
             </button>
             <button 
               onClick={() => setTab('top_voted')} 
-              className={`px-3.5 py-1.5 rounded-full text-xs transition cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-full text-xs transition cursor-pointer flex items-center gap-1.5 flex-shrink-0 ${
                 currentTab === 'top_voted' 
                   ? 'font-bold bg-slate-900 text-white dark:bg-sky-600 dark:text-white shadow-sm' 
                   : 'font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -52,7 +52,7 @@ export default function FeaturedWebsites({
             </button>
             <button 
               onClick={() => setTab('trending')} 
-              className={`px-3.5 py-1.5 rounded-full text-xs transition cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-full text-xs transition cursor-pointer flex items-center gap-1.5 flex-shrink-0 ${
                 currentTab === 'trending' 
                   ? 'font-bold bg-slate-900 text-white dark:bg-sky-600 dark:text-white shadow-sm' 
                   : 'font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -63,7 +63,7 @@ export default function FeaturedWebsites({
             </button>
             <button 
               onClick={() => setTab('new')} 
-              className={`px-3.5 py-1.5 rounded-full text-xs transition cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-full text-xs transition cursor-pointer flex items-center gap-1.5 flex-shrink-0 ${
                 currentTab === 'new' 
                   ? 'font-bold bg-slate-900 text-white dark:bg-sky-600 dark:text-white shadow-sm' 
                   : 'font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -76,7 +76,7 @@ export default function FeaturedWebsites({
 
           <button 
             onClick={resetFilters} 
-            className="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-semibold text-xs sm:text-sm flex items-center gap-1 group ml-1 transition cursor-pointer"
+            className="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-semibold text-xs sm:text-sm flex items-center gap-1 group ml-1 transition cursor-pointer flex-shrink-0"
           >
             All <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </button>
@@ -193,7 +193,7 @@ export default function FeaturedWebsites({
                     ))}
                   </div>
 
-                  <span className="text-[11px] font-bold text-sky-600 dark:text-sky-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-[11px] font-bold text-sky-600 dark:text-sky-400 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     Batafsil →
                   </span>
                 </div>

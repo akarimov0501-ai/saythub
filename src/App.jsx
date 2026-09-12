@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Menu, Plus } from 'lucide-react';
+import { Menu, Plus, Home, Compass, LayoutGrid, Heart, Sparkles, Sun, Moon } from 'lucide-react';
 import { initialWebsites } from './data/websites';
 import { db } from './lib/db';
 import Sidebar from './components/Sidebar';
@@ -461,24 +461,65 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 md:ml-64 lg:ml-72 min-w-0 flex flex-col">
-        {/* Mobile Header (Clean - no admin button) */}
-        <div className="md:hidden bg-slate-900 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow">
-          <div className="flex items-center gap-2">
+        {/* Mobile Header (Clean, Glassy & Rich) */}
+        <div className="md:hidden bg-slate-900/95 dark:bg-[#070b14]/95 backdrop-blur-md text-white px-4 py-2.5 flex items-center justify-between sticky top-0 z-30 border-b border-slate-800/80 shadow-sm">
+          <div className="flex items-center gap-2.5">
             <button 
               onClick={() => setMobileSidebarOpen(true)} 
-              className="p-1 text-slate-300 hover:text-white"
+              className="p-1.5 -ml-1 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition active:scale-95"
+              aria-label="Open menu"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5" />
             </button>
-            <span className="font-bold text-base">LinkHub</span>
+            <div 
+              onClick={() => {
+                setTab('popular');
+                setFilterCategory('all');
+                setSearchQuery('');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-sky-500 via-indigo-500 to-pink-500 p-0.5 flex items-center justify-center shadow-sm">
+                <div className="w-full h-full bg-slate-900 rounded-[6px] flex items-center justify-center">
+                  <Sparkles className="w-3.5 h-3.5 text-sky-400" />
+                </div>
+              </div>
+              <span className="font-extrabold text-base tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">LinkHub</span>
+            </div>
           </div>
-          <button 
-            onClick={() => setSubmitModalOpen(true)} 
-            className="px-3 py-1 bg-sky-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Submit
-          </button>
+
+          <div className="flex items-center gap-2">
+            {/* Dark / Light Mode Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white transition active:scale-90"
+              title={isDark ? "Kunduzgi rejim" : "Tungi rejim"}
+            >
+              {isDark ? (
+                <Moon className="w-4 h-4 text-sky-400" />
+              ) : (
+                <Sun className="w-4 h-4 text-amber-400" />
+              )}
+            </button>
+
+            {/* Profile Avatar / Sign In */}
+            <button
+              onClick={() => setAuthModalOpen(true)}
+              className="p-1 rounded-full border border-slate-700 bg-slate-800 hover:bg-slate-700 transition active:scale-95"
+              title="Profil"
+            >
+              {user ? (
+                <div className="w-6 h-6 rounded-full bg-sky-500 text-white font-bold text-xs flex items-center justify-center">
+                  {user.avatar || user.name?.[0]?.toUpperCase() || 'U'}
+                </div>
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-slate-700 text-slate-300 text-xs flex items-center justify-center">
+                  👤
+                </div>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Cosmic Hero Banner */}
@@ -497,7 +538,7 @@ export default function App() {
         />
 
         {/* Content Body */}
-        <div className="p-5 sm:p-8 lg:p-10 space-y-10 max-w-7xl mx-auto w-full">
+        <div className="p-4 sm:p-8 lg:p-10 space-y-8 sm:space-y-10 max-w-7xl mx-auto w-full pb-28 md:pb-10">
           {/* Categories */}
           <Categories
             websites={allWebsites}
@@ -530,7 +571,7 @@ export default function App() {
         </div>
 
         {/* Footer (Clean - no admin button) */}
-        <footer className="mt-auto border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#0a0f1d] py-6 px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 dark:text-slate-500 gap-3 transition-colors">
+        <footer className="mt-auto border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#0a0f1d] py-6 px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 dark:text-slate-500 gap-3 transition-colors mb-16 md:mb-0">
           <p>© 2026 LinkHub. All useful websites curated in one place.</p>
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80 font-medium text-[11px]">
@@ -540,6 +581,99 @@ export default function App() {
           </div>
         </footer>
       </main>
+
+      {/* Mobile Bottom Navigation Bar (App-like thumb-friendly bar) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0a0f1d]/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 px-2 py-1.5 shadow-2xl safe-area-bottom">
+        <div className="flex items-center justify-around max-w-md mx-auto">
+          {/* 1. Home */}
+          <button
+            onClick={() => {
+              setTab('popular');
+              setFilterCategory('all');
+              setSearchQuery('');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+              currentTab !== 'favorites_only' && currentFilterCategory === 'all' && !searchQuery
+                ? 'text-sky-600 dark:text-sky-400 font-bold'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium'
+            }`}
+          >
+            <Home className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px]">Asosiy</span>
+          </button>
+
+          {/* 2. Explore */}
+          <button
+            onClick={() => {
+              setTab('popular');
+              const sec = document.getElementById('featured-section');
+              if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+              currentTab === 'popular' && (currentFilterCategory !== 'all' || searchQuery)
+                ? 'text-sky-600 dark:text-sky-400 font-bold'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium'
+            }`}
+          >
+            <Compass className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px]">Kashf</span>
+          </button>
+
+          {/* 3. Center Raised Submit Button */}
+          <button
+            onClick={() => setSubmitModalOpen(true)}
+            className="flex flex-col items-center justify-center -mt-5 group cursor-pointer focus:outline-none"
+            aria-label="Taklif yuborish"
+          >
+            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-sky-500 via-indigo-500 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-sky-500/30 group-active:scale-95 transition-transform border-4 border-white dark:border-[#0a0f1d]">
+              <Plus className="w-6 h-6 stroke-[2.5]" />
+            </div>
+            <span className="text-[10px] font-bold text-sky-600 dark:text-sky-400 mt-0.5">Taklif</span>
+          </button>
+
+          {/* 4. Categories */}
+          <button
+            onClick={() => {
+              const sec = document.getElementById('categories-section');
+              if (sec) {
+                sec.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                setMobileSidebarOpen(true);
+              }
+            }}
+            className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium transition-all cursor-pointer"
+          >
+            <LayoutGrid className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px]">Bo'limlar</span>
+          </button>
+
+          {/* 5. Favorites */}
+          <button
+            onClick={() => {
+              setTab('favorites_only');
+              setFilterCategory('all');
+              const sec = document.getElementById('featured-section');
+              if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all relative cursor-pointer ${
+              currentTab === 'favorites_only'
+                ? 'text-sky-600 dark:text-sky-400 font-bold'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium'
+            }`}
+          >
+            <div className="relative">
+              <Heart className={`w-5 h-5 mb-0.5 ${currentTab === 'favorites_only' ? 'fill-sky-600 dark:fill-sky-400 text-sky-600 dark:text-sky-400' : ''}`} />
+              {favorites.length > 0 && (
+                <span className="absolute -top-1 -right-2 w-4 h-4 bg-rose-500 text-white text-[9px] font-extrabold rounded-full flex items-center justify-center shadow-sm">
+                  {favorites.length > 99 ? '99+' : favorites.length}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px]">Saqlangan</span>
+          </button>
+        </div>
+      </nav>
 
       {/* Site Detail & Share Modal */}
       <SiteDetailModal

@@ -16,7 +16,8 @@ import {
   Plus,
   Moon,
   HelpCircle,
-  Send
+  Send,
+  X
 } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -41,7 +42,7 @@ export default function Sidebar({
       {isMobileOpen && (
         <div 
           onClick={closeMobileSidebar}
-          className="fixed inset-0 bg-black/40 z-40 md:hidden transition-opacity"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden transition-opacity"
         />
       )}
 
@@ -53,20 +54,31 @@ export default function Sidebar({
       >
         <div className="space-y-6 overflow-y-auto">
           {/* Brand Header */}
-          <div className="flex items-center gap-3 px-2 py-1">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 via-indigo-500 to-pink-500 p-0.5 flex items-center justify-center shadow-md shadow-sky-500/10 flex-shrink-0">
-              <div className="w-full h-full bg-white dark:bg-slate-900 rounded-full flex items-center justify-center">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-sky-500 via-indigo-600 to-pink-500 flex items-center justify-center text-white">
-                  <Sparkles className="w-3.5 h-3.5" />
+          <div className="flex items-center justify-between px-2 py-1">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 via-indigo-500 to-pink-500 p-0.5 flex items-center justify-center shadow-md shadow-sky-500/10 flex-shrink-0">
+                <div className="w-full h-full bg-white dark:bg-slate-900 rounded-full flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-sky-500 via-indigo-600 to-pink-500 flex items-center justify-center text-white">
+                    <Sparkles className="w-3.5 h-3.5" />
+                  </div>
                 </div>
               </div>
+              <div>
+                <h1 className="font-extrabold text-slate-900 dark:text-white text-lg tracking-tight leading-tight">
+                  LinkHub
+                </h1>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">All useful sites in one place</p>
+              </div>
             </div>
-            <div>
-              <h1 className="font-extrabold text-slate-900 dark:text-white text-lg tracking-tight leading-tight">
-                LinkHub
-              </h1>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">All useful sites in one place</p>
-            </div>
+
+            {/* Mobile Close Button */}
+            <button
+              onClick={closeMobileSidebar}
+              className="md:hidden p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+              title="Menyuni yopish"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Navigation Links */}

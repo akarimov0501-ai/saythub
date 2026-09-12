@@ -46,9 +46,9 @@ export default function Hero({
   };
 
   return (
-    <section className="hero-cosmic text-white pt-6 pb-12 px-4 sm:px-8 lg:px-12 relative">
-      {/* Top Navigation Bar inside Hero */}
-      <div className="max-w-7xl mx-auto flex items-center justify-between mb-12 relative z-10">
+    <section className="hero-cosmic text-white pt-5 sm:pt-6 pb-8 sm:pb-12 px-4 sm:px-8 lg:px-12 relative">
+      {/* Top Navigation Bar inside Hero (Shown on desktop/tablet, handled by sticky header on mobile) */}
+      <div className="max-w-7xl mx-auto hidden sm:flex items-center justify-between mb-12 relative z-10">
         <nav className="hidden sm:flex items-center gap-7 text-sm font-medium text-slate-300 relative">
           <button 
             onClick={() => handleNavClick('discover', 'all')}
@@ -241,7 +241,7 @@ export default function Hero({
                 ×
               </button>
             )}
-            <div className="flex items-center gap-1 bg-slate-100 border border-slate-200 text-slate-500 px-2 py-0.5 rounded-md text-[11px] font-bold flex-shrink-0 select-none">
+            <div className="hidden sm:flex items-center gap-1 bg-slate-100 border border-slate-200 text-slate-500 px-2 py-0.5 rounded-md text-[11px] font-bold flex-shrink-0 select-none">
               <span>Ctrl</span>
               <span>K</span>
             </div>
