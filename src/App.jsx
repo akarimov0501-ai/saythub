@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Menu, Plus, Cloud, Database } from 'lucide-react';
+import { Menu, Plus } from 'lucide-react';
 import { initialWebsites } from './data/websites';
 import { db } from './lib/db';
 import Sidebar from './components/Sidebar';
@@ -9,6 +9,7 @@ import FeaturedWebsites from './components/FeaturedWebsites';
 import LatestAdditions from './components/LatestAdditions';
 import CreateModal from './components/CreateModal';
 import Toast from './components/Toast';
+import AdminLayout from './admin/AdminLayout';
 
 export default function App() {
   const [allWebsites, setAllWebsites] = useState(initialWebsites);
@@ -20,6 +21,11 @@ export default function App() {
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [toast, setToast] = useState(null);
+  
+  // Admin View State
+  const [isAdminView, setIsAdminView] = useState(() => {
+    return window.location.hash === '#admin';
+  });
 
   const searchInputRef = useRef(null);
 
@@ -45,6 +51,13 @@ export default function App() {
       }
     }
     loadData();
+
+    // Listen for hash changes
+    const handleHash = () => {
+      setIsAdminView(window.location.hash === '#admin');
+    };
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
   // Show Toast
@@ -72,15 +85,41 @@ export default function App() {
     await db.toggleFavorite(id, willBeFav);
   };
 
-  // Add Custom Website / Collection
+  // Add Custom Website / Collection (from visitor modal or admin)
   const handleAddWebsite = async (newSiteData) => {
     try {
       const created = await db.createWebsite(newSiteData);
       setAllWebsites((prev) => [created, ...prev]);
-      triggerToast("Website added to your collection!", '✓');
+      triggerToast("Website added successfully to LinkHub!", '✓');
     } catch (err) {
       console.error(err);
       triggerToast("Error saving website", '✕');
+    }
+  };
+
+  // Update Website (Admin)
+  const handleUpdateWebsite = async (id, updatedData) => {
+    try {
+      await db.updateWebsite(id, updatedData);
+      setAllWebsites((prev) => 
+        prev.map(site => site.id === id ? { ...site, ...updatedData } : site)
+      );
+      triggerToast("Website updated successfully!", '✓');
+    } catch (err) {
+      console.error(err);
+      triggerToast("Error updating website", '✕');
+    }
+  };
+
+  // Delete Website (Admin)
+  const handleDeleteWebsite = async (id) => {
+    try {
+      await db.deleteWebsite(id);
+      setAllWebsites((prev) => prev.filter(site => site.id !== id));
+      triggerToast("Website deleted from catalog", '✓');
+    } catch (err) {
+      console.error(err);
+      triggerToast("Error deleting website", '✕');
     }
   };
 
@@ -143,6 +182,25 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // If Admin View is active, render Admin Console
+  if (isAdminView) {
+    return (
+      <>
+        <AdminLayout
+          websites={allWebsites}
+          onAddWebsite={handleAddWebsite}
+          onUpdateWebsite={handleUpdateWebsite}
+          onDeleteWebsite={handleDeleteWebsite}
+          onExitAdmin={() => {
+            setIsAdminView(false);
+            window.location.hash = '';
+          }}
+        />
+        <Toast toast={toast} />
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex antialiased selection:bg-sky-500 selection:text-white">
       {/* Sidebar */}
@@ -155,6 +213,10 @@ export default function App() {
         openCreateModal={() => setCreateModalOpen(true)}
         isMobileOpen={isMobileSidebarOpen}
         closeMobileSidebar={() => setMobileSidebarOpen(false)}
+        onOpenAdmin={() => {
+          setIsAdminView(true);
+          window.location.hash = '#admin';
+        }}
       />
 
       {/* Main Content Area */}
@@ -170,13 +232,24 @@ export default function App() {
             </button>
             <span className="font-bold text-base">LinkHub</span>
           </div>
-          <button 
-            onClick={() => setCreateModalOpen(true)} 
-            className="px-3 py-1 bg-sky-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Add Site
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => {
+                setIsAdminView(true);
+                window.location.hash = '#admin';
+              }} 
+              className="px-2.5 py-1 bg-slate-800 text-sky-400 border border-slate-700 text-xs font-semibold rounded-lg"
+            >
+              Admin
+            </button>
+            <button 
+              onClick={() => setCreateModalOpen(true)} 
+              className="px-3 py-1 bg-sky-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add
+            </button>
+          </div>
         </div>
 
         {/* Cosmic Hero Banner */}
@@ -217,7 +290,16 @@ export default function App() {
         {/* Footer */}
         <footer className="mt-auto border-t border-slate-200/80 bg-white py-6 px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-3">
           <p>© 2026 LinkHub. All useful websites curated in one place.</p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => {
+                setIsAdminView(true);
+                window.location.hash = '#admin';
+              }}
+              className="hover:text-sky-600 transition font-medium underline"
+            >
+              Admin Console
+            </button>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80 font-bold text-[11px] shadow-sm">
               <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
               Firebase Firestore Live (saythub-portal-2026)
