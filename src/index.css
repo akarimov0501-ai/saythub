@@ -1,0 +1,169 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-hand: 'Caveat', cursive;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.font-handwriting {
+  font-family: var(--font-hand);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Cosmic Hero Atmosphere Background */
+.hero-cosmic {
+  position: relative;
+  background-color: #060913;
+  overflow: hidden;
+  background-image: 
+    radial-gradient(1.5px 1.5px at 10% 20%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
+    radial-gradient(1px 1px at 25% 15%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 45% 35%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
+    radial-gradient(1px 1px at 65% 25%, rgba(255, 255, 255, 0.6) 50%, transparent 100%),
+    radial-gradient(2px 2px at 80% 18%, rgba(255, 255, 255, 0.95) 50%, transparent 100%),
+    radial-gradient(1px 1px at 92% 38%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 15% 65%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 35% 80%, rgba(255, 255, 255, 0.6) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 75% 70%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
+    radial-gradient(1px 1px at 88% 85%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
+}
+
+/* Atmospheric Horizon Curve with Glow */
+.hero-cosmic::before {
+  content: '';
+  position: absolute;
+  top: -160%;
+  left: -20%;
+  right: -20%;
+  height: 250%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 100%, 
+    rgba(14, 165, 233, 0.25) 0%, 
+    rgba(99, 102, 241, 0.18) 35%, 
+    rgba(168, 85, 247, 0.08) 60%, 
+    transparent 80%);
+  pointer-events: none;
+  filter: blur(20px);
+}
+
+.hero-cosmic::after {
+  content: '';
+  position: absolute;
+  top: -130%;
+  left: -15%;
+  right: -15%;
+  height: 220%;
+  border-radius: 50%;
+  box-shadow: 
+    0 15px 40px -5px rgba(56, 189, 248, 0.6),
+    0 0 100px 10px rgba(129, 140, 248, 0.4);
+  pointer-events: none;
+  border-bottom: 2.5px solid rgba(255, 255, 255, 0.85);
+  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.9));
+}
+
+/* Text Gradient for Hero */
+.text-gradient-hero {
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #e879f9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glassmorphism search and elements */
+.glass-input {
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(10px);
+  color: #f1f5f9;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-pill:hover, .glass-pill.active {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Cards Hover Effects */
+.site-card {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #edf2f7;
+}
+
+.site-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+  border-color: #cbd5e1;
+}
+
+/* Category Cards Hover */
+.category-card {
+  transition: all 0.2s ease-in-out;
+}
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.05);
+}
+
+/* Sidebar CTA Card Dark gradient */
+.sidebar-cta-card {
+  background: linear-gradient(160deg, #1e2532 0%, #11151f 100%);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
+}
+
+/* Toast Animation */
+@keyframes slideUp {
+  from {
+    transform: translate(-50%, 100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.animate-toast {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Pulse animation for decorative sparkle */
+@keyframes subtlePulse {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+.animate-subtle-pulse {
+  animation: subtlePulse 3s infinite ease-in-out;
+}
