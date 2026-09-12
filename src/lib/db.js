@@ -6,7 +6,8 @@ import {
   doc, 
   deleteDoc, 
   query, 
-  orderBy 
+  orderBy,
+  onSnapshot 
 } from 'firebase/firestore';
 import { initialWebsites } from '../data/websites';
 
@@ -187,12 +188,7 @@ export const db = {
       createdAt: new Date().toISOString()
     };
 
-    try {
-      await setDoc(doc(firestore, 'submissions', id), newSubmission);
-    } catch (err) {
-      console.warn('Firestore submission error, storing locally:', err);
-    }
-
+    // 1. Always store in local storage first
     try {
       const saved = localStorage.getItem('linkhub_submissions');
       const list = saved ? JSON.parse(saved) : [];
@@ -201,38 +197,88 @@ export const db = {
       console.error(e);
     }
 
+    // 2. Save to Firestore
+    try {
+      await setDoc(doc(firestore, 'submissions', id), newSubmission);
+    } catch (err) {
+      console.warn('Firestore submission error, stored locally:', err);
+    }
+
     return newSubmission;
   },
 
-  // Fetch all submissions for Admin Moderation
+  // Fetch all submissions for Admin Moderation (merges Firestore and local storage)
   async getSubmissions() {
+    let cloudSubs = [];
     try {
       const subRef = collection(firestore, 'submissions');
-      const q = query(subRef, orderBy('createdAt', 'desc'));
-      const snapshot = await getDocs(q);
+      const snapshot = await getDocs(subRef);
 
       if (!snapshot.empty) {
-        const subs = [];
         snapshot.forEach((docSnap) => {
-          subs.push({
+          cloudSubs.push({
             id: docSnap.id,
             ...docSnap.data()
           });
         });
-        return subs;
       }
     } catch (err) {
       console.warn('Firestore getSubmissions error, using local fallback:', err);
     }
 
+    let localSubs = [];
     try {
       const saved = localStorage.getItem('linkhub_submissions');
-      if (saved) return JSON.parse(saved);
+      if (saved) localSubs = JSON.parse(saved);
     } catch (e) {
       console.error(e);
     }
 
-    return [];
+    // Merge by id (cloud takes precedence, but keep any local ones that haven't synced yet)
+    const map = new Map();
+    localSubs.forEach(item => { if (item && item.id) map.set(item.id, item); });
+    cloudSubs.forEach(item => { if (item && item.id) map.set(item.id, item); });
+
+    const merged = Array.from(map.values());
+    merged.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    return merged;
+  },
+
+  // Realtime subscription to submissions
+  subscribeToSubmissions(callback) {
+    try {
+      const subRef = collection(firestore, 'submissions');
+      return onSnapshot(subRef, (snapshot) => {
+        const cloudSubs = [];
+        snapshot.forEach((docSnap) => {
+          cloudSubs.push({
+            id: docSnap.id,
+            ...docSnap.data()
+          });
+        });
+
+        let localSubs = [];
+        try {
+          const saved = localStorage.getItem('linkhub_submissions');
+          if (saved) localSubs = JSON.parse(saved);
+        } catch (e) {
+          console.error(e);
+        }
+
+        const map = new Map();
+        localSubs.forEach(item => { if (item && item.id) map.set(item.id, item); });
+        cloudSubs.forEach(item => { if (item && item.id) map.set(item.id, item); });
+
+        const merged = Array.from(map.values());
+        merged.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        callback(merged);
+      }, (err) => {
+        console.warn('Submissions snapshot listener error:', err);
+      });
+    } catch (e) {
+      console.error('Failed to subscribe to submissions:', e);
+      return () => {};
+    }
   },
 
   // Approve submission (creates site in websites catalog and marks submission as approved)

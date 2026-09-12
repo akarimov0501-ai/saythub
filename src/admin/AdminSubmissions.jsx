@@ -10,7 +10,8 @@ import {
   Search, 
   User, 
   Globe, 
-  Calendar 
+  Calendar,
+  RefreshCw
 } from 'lucide-react';
 import BrandIcon from '../components/BrandIcon';
 
@@ -18,10 +19,20 @@ export default function AdminSubmissions({
   submissions = [], 
   onApproveSubmission, 
   onRejectSubmission, 
-  onDeleteSubmission 
+  onDeleteSubmission,
+  onRefreshSubmissions
 }) {
   const [filterStatus, setFilterStatus] = useState('pending');
   const [search, setSearch] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (onRefreshSubmissions) {
+      setIsRefreshing(true);
+      await onRefreshSubmissions();
+      setTimeout(() => setIsRefreshing(false), 600);
+    }
+  };
 
   const filtered = submissions.filter(sub => {
     const matchStatus = filterStatus === 'all' || sub.status === filterStatus;
@@ -50,6 +61,16 @@ export default function AdminSubmissions({
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            title="Arizalarni yangilash"
+            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-sky-600' : ''}`} />
+            <span className="hidden sm:inline">Yangilash</span>
+          </button>
+
           {/* Status Tabs */}
           <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 text-xs">
             <button

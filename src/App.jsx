@@ -112,15 +112,32 @@ export default function App() {
       }
     });
 
+    // Realtime Submissions Listener (Instantly syncs any user submission to admin console)
+    const unsubscribeSubmissions = db.subscribeToSubmissions((subsList) => {
+      if (subsList) {
+        setSubmissions(subsList);
+      }
+    });
+
     // Listen for URL route changes (popstate & hashchange)
-    const handleRoute = () => {
-      setIsAdminView(checkIsAdmin());
+    const handleRoute = async () => {
+      const isAdm = checkIsAdmin();
+      setIsAdminView(isAdm);
+      if (isAdm) {
+        try {
+          const freshSubs = await db.getSubmissions();
+          if (freshSubs) setSubmissions(freshSubs);
+        } catch (e) {
+          console.error(e);
+        }
+      }
     };
 
     window.addEventListener('hashchange', handleRoute);
     window.addEventListener('popstate', handleRoute);
     return () => {
       unsubscribeAuth();
+      if (unsubscribeSubmissions) unsubscribeSubmissions();
       window.removeEventListener('hashchange', handleRoute);
       window.removeEventListener('popstate', handleRoute);
     };
@@ -304,6 +321,18 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Admin: Refresh submissions manually
+  const handleRefreshSubmissions = async () => {
+    try {
+      const freshSubs = await db.getSubmissions();
+      setSubmissions(freshSubs);
+      triggerToast("Arizalar ro'yxati yangilandi!", '✓');
+    } catch (e) {
+      console.error(e);
+      triggerToast("Yangilashda xatolik yuz berdi", '✕');
+    }
+  };
+
   // If Secret Admin Route is accessed (/maadmin103), render Admin Console
   if (isAdminView) {
     return (
@@ -317,6 +346,7 @@ export default function App() {
           onApproveSubmission={handleApproveSubmission}
           onRejectSubmission={handleRejectSubmission}
           onDeleteSubmission={handleDeleteSubmission}
+          onRefreshSubmissions={handleRefreshSubmissions}
           onExitAdmin={() => {
             setIsAdminView(false);
             window.location.hash = '';

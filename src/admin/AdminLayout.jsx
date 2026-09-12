@@ -23,6 +23,7 @@ export default function AdminLayout({
   onApproveSubmission,
   onRejectSubmission,
   onDeleteSubmission,
+  onRefreshSubmissions,
   onExitAdmin 
 }) {
   const [activeTab, setActiveTab] = useState('websites');
@@ -197,6 +198,7 @@ export default function AdminLayout({
             onApproveSubmission={onApproveSubmission}
             onRejectSubmission={onRejectSubmission}
             onDeleteSubmission={onDeleteSubmission}
+            onRefreshSubmissions={onRefreshSubmissions}
           />
         )}
       </main>

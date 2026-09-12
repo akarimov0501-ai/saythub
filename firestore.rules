@@ -10,5 +10,11 @@ service cloud.firestore {
     match /user_favorites/{favoriteId} {
       allow read, write: if true;
     }
+    match /submissions/{submissionId} {
+      allow read, write: if true;
+    }
+    match /users/{userId} {
+      allow read, write: if true;
+    }
   }
 }
