@@ -12,6 +12,7 @@ import Toast from './components/Toast';
 import AdminLayout from './admin/AdminLayout';
 import AuthModal from './components/AuthModal';
 import SubmitModal from './components/SubmitModal';
+import SiteDetailModal from './components/SiteDetailModal';
 import { auth, onAuthStateChanged } from './lib/firebase';
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentFilterCategory, setFilterCategory] = useState('all');
   const [currentTab, setTab] = useState('popular');
+  const [selectedSiteForModal, setSelectedSiteForModal] = useState(null);
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isSubmitModalOpen, setSubmitModalOpen] = useState(false);
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
@@ -258,6 +260,42 @@ export default function App() {
     }
   };
 
+  // Upvote / Like website
+  const handleUpvote = async (siteId, currentLikes = 0) => {
+    const newLikes = (Number(currentLikes) || 0) + 1;
+    setAllWebsites((prev) => 
+      prev.map(site => site.id === siteId ? { ...site, likesCount: newLikes } : site)
+    );
+    if (selectedSiteForModal && selectedSiteForModal.id === siteId) {
+      setSelectedSiteForModal(prev => ({ ...prev, likesCount: newLikes }));
+    }
+    await db.upvoteWebsite(siteId, currentLikes);
+  };
+
+  // Admin: Seed curated websites
+  const handleSeedCuratedWebsites = async () => {
+    try {
+      const seeded = await db.seedCuratedWebsites();
+      setAllWebsites((prev) => {
+        const map = new Map();
+        prev.forEach(s => map.set(s.id, s));
+        seeded.forEach(s => map.set(s.id, s));
+        return Array.from(map.values());
+      });
+      triggerToast("20+ ta sara saytlar muvaffaqiyatli yuklandi!", '✨');
+    } catch (e) {
+      console.error(e);
+      triggerToast("Saytlarni yuklashda xatolik yuz berdi", '✕');
+    }
+  };
+
+  // Select Tag filter
+  const handleSelectTag = (tag) => {
+    setSearchQuery(tag);
+    const sec = document.getElementById('featured-section');
+    if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+  };
+
   // Reset all filters
   const resetFilters = () => {
     setSearchQuery('');
@@ -294,6 +332,8 @@ export default function App() {
       list = list.filter((site) => site.new);
     } else if (currentTab === 'trending') {
       list = list.filter((site) => site.trending);
+    } else if (currentTab === 'top_voted') {
+      list = [...list].sort((a, b) => (Number(b.likesCount) || 0) - (Number(a.likesCount) || 0));
     } else if (currentTab === 'favorites_only') {
       list = list.filter((site) => favorites.includes(site.id));
     } else if (currentTab === 'collections') {
@@ -315,6 +355,7 @@ export default function App() {
         setCreateModalOpen(false);
         setAuthModalOpen(false);
         setSubmitModalOpen(false);
+        setSelectedSiteForModal(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -343,6 +384,7 @@ export default function App() {
           onAddWebsite={handleAddWebsite}
           onUpdateWebsite={handleUpdateWebsite}
           onDeleteWebsite={handleDeleteWebsite}
+          onSeedCuratedWebsites={handleSeedCuratedWebsites}
           onApproveSubmission={handleApproveSubmission}
           onRejectSubmission={handleRejectSubmission}
           onDeleteSubmission={handleDeleteSubmission}
@@ -433,6 +475,9 @@ export default function App() {
             favorites={favorites}
             toggleBookmark={toggleBookmark}
             resetFilters={resetFilters}
+            onOpenDetail={(site) => setSelectedSiteForModal(site)}
+            onUpvote={handleUpvote}
+            onSelectTag={handleSelectTag}
           />
 
           {/* Latest Additions (shows when sites exist) */}
@@ -441,6 +486,7 @@ export default function App() {
             favorites={favorites}
             toggleBookmark={toggleBookmark}
             setTab={setTab}
+            onOpenDetail={(site) => setSelectedSiteForModal(site)}
           />
         </div>
 
@@ -455,6 +501,18 @@ export default function App() {
           </div>
         </footer>
       </main>
+
+      {/* Site Detail & Share Modal */}
+      <SiteDetailModal
+        site={selectedSiteForModal}
+        isOpen={Boolean(selectedSiteForModal)}
+        onClose={() => setSelectedSiteForModal(null)}
+        isBookmarked={selectedSiteForModal ? favorites.includes(selectedSiteForModal.id) : false}
+        onToggleBookmark={toggleBookmark}
+        onUpvote={handleUpvote}
+        onSelectTag={handleSelectTag}
+        triggerToast={triggerToast}
+      />
 
       {/* Create Modal Dialog (Custom collection) */}
       <CreateModal

@@ -9,7 +9,7 @@ import {
   orderBy,
   onSnapshot 
 } from 'firebase/firestore';
-import { initialWebsites } from '../data/websites';
+import { initialWebsites, curatedWebsites } from '../data/websites';
 
 const LOCAL_STORAGE_CUSTOM_KEY = 'linkhub_custom_sites';
 const LOCAL_STORAGE_FAVORITES_KEY = 'linkhub_favorites';
@@ -64,9 +64,10 @@ export const db = {
       popular: Boolean(siteData.popular),
       trending: Boolean(siteData.trending),
       new: siteData.new !== undefined ? Boolean(siteData.new) : true,
+      likesCount: Number(siteData.likesCount) || 0,
       iconType: siteData.iconType || 'custom',
       logoUrl: siteData.logoUrl || '',
-      createdAt: new Date().toISOString()
+      createdAt: siteData.createdAt || new Date().toISOString()
     };
 
     try {
@@ -85,6 +86,62 @@ export const db = {
     }
 
     return newSite;
+  },
+
+  // Upvote / Like website
+  async upvoteWebsite(id, currentLikes = 0) {
+    const newLikes = (Number(currentLikes) || 0) + 1;
+    try {
+      await setDoc(doc(firestore, 'websites', id), { likesCount: newLikes }, { merge: true });
+    } catch (err) {
+      console.warn('Firestore upvote error, saving locally:', err);
+    }
+
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_CUSTOM_KEY);
+      if (saved) {
+        const list = JSON.parse(saved).map(s => s.id === id ? { ...s, likesCount: newLikes } : s);
+        localStorage.setItem(LOCAL_STORAGE_CUSTOM_KEY, JSON.stringify(list));
+      }
+      const userUpvotes = JSON.parse(localStorage.getItem('linkhub_user_upvotes') || '[]');
+      if (!userUpvotes.includes(id)) {
+        userUpvotes.push(id);
+        localStorage.setItem('linkhub_user_upvotes', JSON.stringify(userUpvotes));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return newLikes;
+  },
+
+  // Seed curated websites to Firestore and Local Storage
+  async seedCuratedWebsites(sitesToSeed = curatedWebsites) {
+    const seeded = [];
+    for (const site of sitesToSeed) {
+      const formattedSite = {
+        ...site,
+        createdAt: site.createdAt || new Date().toISOString()
+      };
+      try {
+        await setDoc(doc(firestore, 'websites', site.id), formattedSite);
+      } catch (err) {
+        console.error('Failed to seed site to firestore:', site.id, err);
+      }
+      seeded.push(formattedSite);
+    }
+
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_CUSTOM_KEY);
+      const existing = saved ? JSON.parse(saved) : [];
+      const map = new Map();
+      existing.forEach(s => map.set(s.id, s));
+      seeded.forEach(s => map.set(s.id, s));
+      localStorage.setItem(LOCAL_STORAGE_CUSTOM_KEY, JSON.stringify(Array.from(map.values())));
+    } catch (e) {
+      console.error(e);
+    }
+
+    return seeded;
   },
 
   // Delete a website from Firestore (for Admin Panel)

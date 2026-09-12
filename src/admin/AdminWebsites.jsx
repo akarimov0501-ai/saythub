@@ -19,12 +19,14 @@ export default function AdminWebsites({
   websites, 
   onAddWebsite, 
   onUpdateWebsite, 
-  onDeleteWebsite 
+  onDeleteWebsite,
+  onSeedCuratedWebsites
 }) {
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSite, setEditingSite] = useState(null);
+  const [isSeeding, setIsSeeding] = useState(false);
 
   // Form State with logoUrl
   const [formData, setFormData] = useState({
@@ -37,6 +39,7 @@ export default function AdminWebsites({
     popular: false,
     trending: false,
     isNew: true,
+    likesCount: 0,
     iconType: 'custom'
   });
 
@@ -52,6 +55,7 @@ export default function AdminWebsites({
       popular: false,
       trending: false,
       isNew: true,
+      likesCount: 0,
       iconType: 'custom'
     });
     setIsModalOpen(true);
@@ -69,6 +73,7 @@ export default function AdminWebsites({
       popular: Boolean(site.popular),
       trending: Boolean(site.trending),
       isNew: Boolean(site.new),
+      likesCount: Number(site.likesCount) || 0,
       iconType: site.iconType || 'custom'
     });
     setIsModalOpen(true);
@@ -110,6 +115,7 @@ export default function AdminWebsites({
       popular: formData.popular,
       trending: formData.trending,
       new: formData.isNew,
+      likesCount: Number(formData.likesCount) || 0,
       iconType: formData.iconType
     };
 
@@ -131,7 +137,7 @@ export default function AdminWebsites({
 
   return (
     <div className="space-y-6">
-      {/* Top Bar: Search, Filter & Add Button */}
+      {/* Top Bar: Search, Filter & Action Buttons */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3 w-full sm:w-auto flex-1 max-w-md">
           <div className="relative w-full">
@@ -160,13 +166,33 @@ export default function AdminWebsites({
           </select>
         </div>
 
-        <button 
-          onClick={openAddModal}
-          className="w-full sm:w-auto px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition"
-        >
-          <Plus className="w-4 h-4" />
-          Add Website
-        </button>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          {onSeedCuratedWebsites && (
+            <button 
+              onClick={async () => {
+                if (window.confirm("20+ ta eng sara saytlarni (ChatGPT, Claude, Notion, Figma, GitHub va boshqalar) bazaga kiritishni xohlaysizmi?")) {
+                  setIsSeeding(true);
+                  await onSeedCuratedWebsites();
+                  setIsSeeding(false);
+                }
+              }}
+              disabled={isSeeding}
+              className="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
+              title="Katalogga 20+ mashhur sara saytlarni yuklash"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>{isSeeding ? "Yuklanmoqda..." : "Seed 20+ Curated Tools"}</span>
+            </button>
+          )}
+
+          <button 
+            onClick={openAddModal}
+            className="w-full sm:w-auto px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4" />
+            Add Website
+          </button>
+        </div>
       </div>
 
       {/* Websites Table */}
@@ -178,6 +204,7 @@ export default function AdminWebsites({
                 <th className="px-5 py-3.5">Logo & Website</th>
                 <th className="px-5 py-3.5">Category</th>
                 <th className="px-5 py-3.5">Badges</th>
+                <th className="px-5 py-3.5">Likes</th>
                 <th className="px-5 py-3.5">Tags</th>
                 <th className="px-5 py-3.5 text-right">Actions</th>
               </tr>
@@ -185,8 +212,8 @@ export default function AdminWebsites({
             <tbody className="divide-y divide-slate-100">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-slate-400">
-                    Hozircha hech qanday sayt mavjud emas. Yuqoridagi "+ Add Website" tugmasi orqali yangi sayt qo'shing.
+                  <td colSpan={6} className="py-12 text-center text-slate-400">
+                    Hozircha hech qanday sayt mavjud emas. Yuqoridagi "Seed 20+ Curated Tools" yoki "+ Add Website" tugmasi orqali saytlar qo'shing.
                   </td>
                 </tr>
               ) : (
@@ -229,6 +256,12 @@ export default function AdminWebsites({
                           </span>
                         )}
                       </div>
+                    </td>
+
+                    <td className="px-5 py-3.5">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-100">
+                        ❤️ {site.likesCount || 0}
+                      </span>
                     </td>
 
                     <td className="px-5 py-3.5">

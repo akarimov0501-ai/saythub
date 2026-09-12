@@ -2,7 +2,7 @@ import React from 'react';
 import { Bookmark, ArrowRight } from 'lucide-react';
 import BrandIcon from './BrandIcon';
 
-export default function LatestAdditions({ websites = [], favorites, toggleBookmark, setTab }) {
+export default function LatestAdditions({ websites = [], favorites, toggleBookmark, setTab, onOpenDetail }) {
   // Show up to 6 latest sites from database
   const latest = (websites && websites.length > 0)
     ? websites.filter(w => w.new).slice(0, 6)
@@ -31,7 +31,7 @@ export default function LatestAdditions({ websites = [], favorites, toggleBookma
           return (
             <div 
               key={item.id}
-              onClick={() => window.open(item.url, '_blank')} 
+              onClick={() => onOpenDetail ? onOpenDetail(item) : window.open(item.url, '_blank')} 
               className="site-card bg-white dark:bg-slate-900/80 rounded-2xl p-3 flex items-center justify-between group cursor-pointer border border-slate-100 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-sky-500/50 shadow-sm hover:shadow transition-all"
             >
               <div className="flex items-center gap-3 overflow-hidden">

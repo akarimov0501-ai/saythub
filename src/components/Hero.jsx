@@ -228,6 +228,19 @@ export default function Hero({
               placeholder="Search websites, tools, or categories..." 
               className="w-full bg-transparent text-slate-900 placeholder-slate-400 text-sm font-medium focus:outline-none"
             />
+            {searchQuery && (
+              <button 
+                type="button"
+                onClick={() => {
+                  setSearchQuery('');
+                  searchInputRef.current?.focus();
+                }}
+                className="w-5 h-5 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-600 flex items-center justify-center text-xs font-bold transition flex-shrink-0 mr-1 cursor-pointer"
+                title="Tozalash"
+              >
+                ×
+              </button>
+            )}
             <div className="flex items-center gap-1 bg-slate-100 border border-slate-200 text-slate-500 px-2 py-0.5 rounded-md text-[11px] font-bold flex-shrink-0 select-none">
               <span>Ctrl</span>
               <span>K</span>

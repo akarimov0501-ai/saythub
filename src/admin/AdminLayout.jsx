@@ -20,6 +20,7 @@ export default function AdminLayout({
   onAddWebsite, 
   onUpdateWebsite, 
   onDeleteWebsite, 
+  onSeedCuratedWebsites,
   onApproveSubmission,
   onRejectSubmission,
   onDeleteSubmission,
@@ -185,6 +186,7 @@ export default function AdminLayout({
             onAddWebsite={onAddWebsite}
             onUpdateWebsite={onUpdateWebsite}
             onDeleteWebsite={onDeleteWebsite}
+            onSeedCuratedWebsites={onSeedCuratedWebsites}
           />
         )}
 
