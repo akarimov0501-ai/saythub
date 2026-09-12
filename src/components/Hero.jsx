@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
-import { Search, ChevronDown, Sun } from 'lucide-react';
+import { Search, ChevronDown, Sun, Moon } from 'lucide-react';
 
 export default function Hero({ 
   searchQuery, 
   setSearchQuery, 
   currentFilterCategory, 
   setFilterCategory,
-  searchInputRef
+  searchInputRef,
+  isDark,
+  toggleTheme,
+  user,
+  onOpenAuth,
+  setTab
 }) {
   const [activeNav, setActiveNav] = useState('discover');
   const [isMoreOpen, setIsMoreOpen] = useState(false);
@@ -26,6 +31,13 @@ export default function Hero({
     setActiveNav(navId);
     setFilterCategory(catFilter);
     setIsMoreOpen(false);
+    if (navId === 'discover') {
+      if (setTab) setTab('popular');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const sec = document.getElementById('featured-section');
+      if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
@@ -134,17 +146,34 @@ export default function Hero({
           
           {/* Theme toggle pill */}
           <button 
-            title="Toggle theme"
-            className="flex items-center gap-1.5 bg-white/10 border border-white/20 hover:bg-white/20 px-2.5 py-1 rounded-full text-slate-200 transition text-xs"
+            onClick={toggleTheme}
+            title={isDark ? "Kunduzgi rejimga o'tish" : "Tungi rejimga o'tish"}
+            className="flex items-center gap-1.5 bg-white/10 border border-white/20 hover:bg-white/20 px-2.5 py-1 rounded-full text-slate-200 transition text-xs active:scale-95"
           >
-            <Sun className="w-3.5 h-3.5 text-amber-300" />
+            {isDark ? (
+              <Moon className="w-3.5 h-3.5 text-sky-300 fill-sky-300/20" />
+            ) : (
+              <Sun className="w-3.5 h-3.5 text-amber-300 fill-amber-300/20" />
+            )}
             <span className="w-px h-3 bg-white/20"></span>
             <span className="text-[11px] text-slate-300 leading-none">✦</span>
           </button>
 
-          {/* Sign In Button */}
-          <button className="px-4 py-1.5 text-xs font-semibold rounded-full border border-white/20 bg-white/5 hover:bg-white/15 backdrop-blur-sm transition">
-            Sign In
+          {/* Sign In / Profile Button */}
+          <button 
+            onClick={onOpenAuth}
+            className="px-4 py-1.5 text-xs font-semibold rounded-full border border-white/20 bg-white/5 hover:bg-white/15 backdrop-blur-sm transition flex items-center gap-2 active:scale-95"
+          >
+            {user ? (
+              <>
+                <div className="w-5 h-5 rounded-full bg-sky-500 text-white font-bold text-[10px] flex items-center justify-center">
+                  {user.avatar || 'U'}
+                </div>
+                <span className="max-w-[80px] truncate">{user.name}</span>
+              </>
+            ) : (
+              'Sign In'
+            )}
           </button>
         </div>
       </div>
@@ -197,7 +226,12 @@ export default function Hero({
             return (
               <button 
                 key={idx}
-                onClick={() => setFilterCategory(tag.value === currentFilterCategory ? 'all' : tag.value)}
+                onClick={() => {
+                  const targetVal = tag.value === currentFilterCategory ? 'all' : tag.value;
+                  setFilterCategory(targetVal);
+                  const sec = document.getElementById('featured-section');
+                  if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+                }}
                 className={`glass-pill px-3.5 py-1.5 rounded-full transition-all ${
                   isActive ? 'bg-white/30 text-white border-white/50 shadow-sm' : ''
                 }`}

@@ -10,6 +10,7 @@ import LatestAdditions from './components/LatestAdditions';
 import CreateModal from './components/CreateModal';
 import Toast from './components/Toast';
 import AdminLayout from './admin/AdminLayout';
+import AuthModal from './components/AuthModal';
 
 export default function App() {
   const [allWebsites, setAllWebsites] = useState(initialWebsites);
@@ -19,8 +20,39 @@ export default function App() {
   const [currentFilterCategory, setFilterCategory] = useState('all');
   const [currentTab, setTab] = useState('popular');
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [toast, setToast] = useState(null);
+
+  // User Authentication State
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('linkhub_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Dark Mode Theme State
+  const [isDark, setIsDark] = useState(() => {
+    return localStorage.getItem('linkhub_theme') === 'dark';
+  });
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
+
+  const toggleTheme = () => {
+    const next = !isDark;
+    setIsDark(next);
+    localStorage.setItem('linkhub_theme', next ? 'dark' : 'light');
+    triggerToast(next ? "Tungi rejim yoqildi 🌙" : "Kunduzgi rejim yoqildi ☀️", next ? '🌙' : '☀️');
+  };
 
   // Secret Admin Path Detection: only accessed via /maadmin103 or #/maadmin103
   const checkIsAdmin = () => {
@@ -171,6 +203,8 @@ export default function App() {
       list = list.filter((site) => site.trending);
     } else if (currentTab === 'favorites_only') {
       list = list.filter((site) => favorites.includes(site.id));
+    } else if (currentTab === 'collections') {
+      list = list.filter((site) => site.popular || favorites.includes(site.id) || (site.tags || []).length > 0);
     }
 
     return list;
@@ -186,6 +220,7 @@ export default function App() {
       }
       if (e.key === 'Escape') {
         setCreateModalOpen(false);
+        setAuthModalOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -226,6 +261,10 @@ export default function App() {
         openCreateModal={() => setCreateModalOpen(true)}
         isMobileOpen={isMobileSidebarOpen}
         closeMobileSidebar={() => setMobileSidebarOpen(false)}
+        user={user}
+        openAuthModal={() => setAuthModalOpen(true)}
+        toggleTheme={toggleTheme}
+        triggerToast={triggerToast}
       />
 
       {/* Main Content Area */}
@@ -257,6 +296,11 @@ export default function App() {
           currentFilterCategory={currentFilterCategory}
           setFilterCategory={setFilterCategory}
           searchInputRef={searchInputRef}
+          isDark={isDark}
+          toggleTheme={toggleTheme}
+          user={user}
+          onOpenAuth={() => setAuthModalOpen(true)}
+          setTab={setTab}
         />
 
         {/* Content Body */}
@@ -303,6 +347,15 @@ export default function App() {
         isOpen={isCreateModalOpen}
         onClose={() => setCreateModalOpen(false)}
         onAddWebsite={handleAddWebsite}
+      />
+
+      {/* User Auth / Profile Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        user={user}
+        setUser={setUser}
+        triggerToast={triggerToast}
       />
 
       {/* Toast Notification */}
