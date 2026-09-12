@@ -390,6 +390,7 @@ export default function App() {
         <div className="p-5 sm:p-8 lg:p-10 space-y-10 max-w-7xl mx-auto w-full">
           {/* Categories */}
           <Categories
+            websites={allWebsites}
             currentFilterCategory={currentFilterCategory}
             setFilterCategory={setFilterCategory}
           />

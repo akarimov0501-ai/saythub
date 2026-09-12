@@ -16,16 +16,20 @@ export default function Hero({
 }) {
   const [activeNav, setActiveNav] = useState('discover');
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [isTagsMoreOpen, setIsTagsMoreOpen] = useState(false);
 
-  const quickTags = [
+  const primaryTags = [
     { label: 'AI', value: 'AI' },
     { label: 'Design', value: 'Design' },
-    { label: 'Development', value: 'Development' },
-    { label: 'Productivity', value: 'Productivity' },
-    { label: 'Education', value: 'Education' },
-    { label: 'Finance', value: 'Finance' },
-    { label: 'Entertainment', value: 'Entertainment' },
-    { label: '···', value: 'all' }
+    { label: 'Development', value: 'Development' }
+  ];
+
+  const moreTags = [
+    { label: 'Productivity', value: 'Productivity', icon: '📋' },
+    { label: 'Education', value: 'Education', icon: '🎓' },
+    { label: 'Finance', value: 'Finance', icon: '💰' },
+    { label: 'Entertainment', value: 'Entertainment', icon: '🎬' },
+    { label: 'All Categories', value: 'all', icon: '✨' }
   ];
 
   const handleNavClick = (navId, catFilter) => {
@@ -231,27 +235,87 @@ export default function Hero({
           </div>
         </div>
 
-        {/* Category Tags Below Search */}
-        <div className="flex items-center justify-center flex-wrap gap-2 text-xs font-medium">
-          {quickTags.map((tag, idx) => {
+        {/* Category Tags Below Search (Clean: 3 tags + More dropdown) */}
+        <div className="flex items-center justify-center flex-wrap gap-2 text-xs font-medium relative">
+          {primaryTags.map((tag) => {
             const isActive = currentFilterCategory.toLowerCase() === tag.value.toLowerCase();
             return (
               <button 
-                key={idx}
+                key={tag.value}
                 onClick={() => {
-                  const targetVal = tag.value === currentFilterCategory ? 'all' : tag.value;
+                  const targetVal = tag.value.toLowerCase() === currentFilterCategory.toLowerCase() ? 'all' : tag.value;
                   setFilterCategory(targetVal);
+                  setIsTagsMoreOpen(false);
                   const sec = document.getElementById('featured-section');
                   if (sec) sec.scrollIntoView({ behavior: 'smooth' });
                 }}
                 className={`glass-pill px-3.5 py-1.5 rounded-full transition-all ${
-                  isActive ? 'bg-white/30 text-white border-white/50 shadow-sm' : ''
+                  isActive ? 'bg-white/30 text-white border-white/50 shadow-sm font-bold' : ''
                 }`}
               >
                 {tag.label}
               </button>
             );
           })}
+
+          {/* More Tag with Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsTagsMoreOpen(!isTagsMoreOpen)}
+              className={`glass-pill px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer ${
+                moreTags.some(t => t.value !== 'all' && t.value.toLowerCase() === currentFilterCategory.toLowerCase())
+                  ? 'bg-white/30 text-white border-white/50 shadow-sm font-bold'
+                  : ''
+              }`}
+            >
+              <span>
+                {moreTags.some(t => t.value !== 'all' && t.value.toLowerCase() === currentFilterCategory.toLowerCase())
+                  ? currentFilterCategory
+                  : 'More'}
+              </span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isTagsMoreOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isTagsMoreOpen && (
+              <>
+                <div 
+                  className="fixed inset-0 z-20"
+                  onClick={() => setIsTagsMoreOpen(false)}
+                />
+                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-2xl p-1.5 z-30 animate-fadeIn space-y-0.5 text-left">
+                  {moreTags.map((tag) => {
+                    const isActive = tag.value === 'all' 
+                      ? currentFilterCategory === 'all'
+                      : currentFilterCategory.toLowerCase() === tag.value.toLowerCase();
+                    return (
+                      <button
+                        key={tag.value}
+                        type="button"
+                        onClick={() => {
+                          setFilterCategory(tag.value);
+                          setIsTagsMoreOpen(false);
+                          const sec = document.getElementById('featured-section');
+                          if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-xl transition cursor-pointer ${
+                          isActive
+                            ? 'bg-sky-500/20 text-sky-300 font-bold border border-sky-500/30'
+                            : 'text-slate-200 hover:bg-slate-800/80 hover:text-white'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>{tag.icon}</span>
+                          <span>{tag.label}</span>
+                        </span>
+                        {isActive && <span className="text-sky-400 text-xs">✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </section>
