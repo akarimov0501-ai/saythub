@@ -7,6 +7,7 @@ import Hero from './components/Hero';
 import Categories from './components/Categories';
 import FeaturedWebsites from './components/FeaturedWebsites';
 import LatestAdditions from './components/LatestAdditions';
+import CreateModal from './components/CreateModal';
 import Toast from './components/Toast';
 import AdminLayout from './admin/AdminLayout';
 import AuthModal from './components/AuthModal';
