@@ -27,7 +27,7 @@ export const curatedWebsites = [
     popular: true,
     trending: true,
     new: false,
-    likesCount: 342,
+    likesCount: 0,
     iconType: 'chatgpt'
   },
   {
@@ -42,7 +42,7 @@ export const curatedWebsites = [
     popular: true,
     trending: true,
     new: true,
-    likesCount: 289,
+    likesCount: 0,
     iconType: 'custom'
   },
   {
@@ -57,7 +57,7 @@ export const curatedWebsites = [
     popular: true,
     trending: true,
     new: true,
-    likesCount: 195,
+    likesCount: 0,
     iconType: 'custom'
   },
   {
@@ -72,7 +72,7 @@ export const curatedWebsites = [
     popular: true,
     trending: true,
     new: false,
-    likesCount: 274,
+    likesCount: 0,
     iconType: 'midjourney'
   },
   {
@@ -87,7 +87,7 @@ export const curatedWebsites = [
     popular: true,
     trending: false,
     new: false,
-    likesCount: 310,
+    likesCount: 0,
     iconType: 'figma'
   },
   {
@@ -102,7 +102,7 @@ export const curatedWebsites = [
     popular: true,
     trending: false,
     new: false,
-    likesCount: 220,
+    likesCount: 0,
     iconType: 'canva'
   },
   {
@@ -117,7 +117,7 @@ export const curatedWebsites = [
     popular: true,
     trending: false,
     new: false,
-    likesCount: 180,
+    likesCount: 0,
     iconType: 'unsplash'
   },
   {
@@ -132,7 +132,7 @@ export const curatedWebsites = [
     popular: false,
     trending: true,
     new: true,
-    likesCount: 165,
+    likesCount: 0,
     iconType: 'custom'
   },
   {
@@ -147,7 +147,7 @@ export const curatedWebsites = [
     popular: true,
     trending: true,
     new: false,
-    likesCount: 380,
+    likesCount: 0,
     iconType: 'github'
   },
   {
@@ -162,7 +162,7 @@ export const curatedWebsites = [
     popular: true,
     trending: false,
     new: false,
-    likesCount: 290,
+    likesCount: 0,
     iconType: 'vscode'
   },
   {
@@ -177,7 +177,7 @@ export const curatedWebsites = [
     popular: true,
     trending: true,
     new: false,
-    likesCount: 245,
+    likesCount: 0,
     iconType: 'vercel'
   },
   {
@@ -192,7 +192,7 @@ export const curatedWebsites = [
     popular: true,
     trending: true,
     new: true,
-    likesCount: 215,
+    likesCount: 0,
     iconType: 'supabase'
   },
   {
@@ -207,7 +207,7 @@ export const curatedWebsites = [
     popular: true,
     trending: false,
     new: false,
-    likesCount: 230,
+    likesCount: 0,
     iconType: 'custom'
   },
   {
@@ -222,7 +222,7 @@ export const curatedWebsites = [
     popular: true,
     trending: true,
     new: false,
-    likesCount: 315,
+    likesCount: 0,
     iconType: 'notion'
   },
   {
@@ -237,7 +237,7 @@ export const curatedWebsites = [
     popular: true,
     trending: true,
     new: true,
-    likesCount: 198,
+    likesCount: 0,
     iconType: 'linear'
   },
   {
@@ -252,7 +252,7 @@ export const curatedWebsites = [
     popular: false,
     trending: true,
     new: true,
-    likesCount: 172,
+    likesCount: 0,
     iconType: 'custom'
   },
   {
@@ -267,7 +267,7 @@ export const curatedWebsites = [
     popular: true,
     trending: false,
     new: false,
-    likesCount: 185,
+    likesCount: 0,
     iconType: 'coursera'
   },
   {
@@ -282,7 +282,7 @@ export const curatedWebsites = [
     popular: true,
     trending: false,
     new: false,
-    likesCount: 228,
+    likesCount: 0,
     iconType: 'duolingo'
   },
   {
@@ -297,7 +297,7 @@ export const curatedWebsites = [
     popular: true,
     trending: false,
     new: false,
-    likesCount: 210,
+    likesCount: 0,
     iconType: 'stripe'
   }
 ];

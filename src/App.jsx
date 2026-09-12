@@ -13,6 +13,7 @@ import AdminLayout from './admin/AdminLayout';
 import AuthModal from './components/AuthModal';
 import SubmitModal from './components/SubmitModal';
 import SiteDetailModal from './components/SiteDetailModal';
+import { matchesCategory } from './data/categories';
 import { auth, onAuthStateChanged } from './lib/firebase';
 
 export default function App() {
@@ -366,11 +367,7 @@ export default function App() {
 
     // Category filter
     if (currentFilterCategory !== 'all') {
-      const cat = currentFilterCategory.toLowerCase();
-      list = list.filter((site) =>
-        (site.category || '').toLowerCase().includes(cat) ||
-        (site.tags || []).some((t) => t.toLowerCase().includes(cat))
-      );
+      list = list.filter((site) => matchesCategory(site, currentFilterCategory));
     }
 
     // Tab filter

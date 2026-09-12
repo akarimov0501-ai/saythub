@@ -1,49 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Sparkles, 
-  PenTool, 
-  Code2, 
-  CheckSquare, 
-  GraduationCap, 
-  Wallet, 
-  PlaySquare, 
   MoreHorizontal,
   ChevronDown,
   ChevronUp,
   ArrowRight,
   Layers
 } from 'lucide-react';
-
-const categoryIcons = {
-  ai: Sparkles,
-  design: PenTool,
-  development: Code2,
-  productivity: CheckSquare,
-  education: GraduationCap,
-  finance: Wallet,
-  entertainment: PlaySquare,
-  all: MoreHorizontal
-};
-
-const PRIMARY_CATEGORIES = [
-  { id: 'ai', name: 'AI Tools', color: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400', icon: Sparkles },
-  { id: 'design', name: 'Design', color: 'bg-pink-50 text-pink-600 dark:bg-pink-950/40 dark:text-pink-400', icon: PenTool },
-  { id: 'development', name: 'Development', color: 'bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400', icon: Code2 },
-];
-
-const SECONDARY_CATEGORIES = [
-  { id: 'productivity', name: 'Productivity', color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400', icon: CheckSquare },
-  { id: 'education', name: 'Education', color: 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400', icon: GraduationCap },
-  { id: 'finance', name: 'Finance', color: 'bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400', icon: Wallet },
-  { id: 'entertainment', name: 'Entertainment', color: 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400', icon: PlaySquare }
-];
+import { PRIMARY_CATEGORIES, SECONDARY_CATEGORIES, matchesCategory } from '../data/categories';
 
 export default function Categories({ websites = [], currentFilterCategory = 'all', setFilterCategory }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // If a secondary category is currently selected, auto-expand the tray so it is visible
   const isSecondaryActive = SECONDARY_CATEGORIES.some(
-    cat => cat.name.toLowerCase() === currentFilterCategory.toLowerCase()
+    cat => matchesCategory({ category: currentFilterCategory }, cat.name)
   );
 
   useEffect(() => {
@@ -56,19 +26,13 @@ export default function Categories({ websites = [], currentFilterCategory = 'all
     if (!websites || !Array.isArray(websites) || websites.length === 0) {
       return '0 ta sayt';
     }
-    const count = websites.filter(w => {
-      const wCat = (w.category || '').toLowerCase();
-      const cName = catName.toLowerCase();
-      if (cName === 'ai tools') {
-        return wCat === 'ai tools' || wCat === 'ai';
-      }
-      return wCat === cName;
-    }).length;
+    const count = websites.filter(w => matchesCategory(w, catName)).length;
     return `${count} ta sayt`;
   };
 
   const handleSelectCategory = (catName) => {
-    const nextCategory = currentFilterCategory.toLowerCase() === catName.toLowerCase() ? 'all' : catName;
+    const isCurrentlyActive = matchesCategory({ category: currentFilterCategory }, catName);
+    const nextCategory = isCurrentlyActive ? 'all' : catName;
     setFilterCategory(nextCategory);
     const sec = document.getElementById('featured-section');
     if (sec) sec.scrollIntoView({ behavior: 'smooth' });
@@ -115,8 +79,8 @@ export default function Categories({ websites = [], currentFilterCategory = 'all
       {/* Top 4 Cards Grid (3 primary categories + 1 More card) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">
         {PRIMARY_CATEGORIES.map((cat) => {
-          const IconComponent = cat.icon || Sparkles;
-          const isActive = currentFilterCategory.toLowerCase() === cat.name.toLowerCase();
+          const IconComponent = cat.icon;
+          const isActive = matchesCategory({ category: currentFilterCategory }, cat.name);
           
           return (
             <div 
@@ -193,8 +157,8 @@ export default function Categories({ websites = [], currentFilterCategory = 'all
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">
             {SECONDARY_CATEGORIES.map((cat) => {
-              const IconComponent = cat.icon || CheckSquare;
-              const isActive = currentFilterCategory.toLowerCase() === cat.name.toLowerCase();
+              const IconComponent = cat.icon;
+              const isActive = matchesCategory({ category: currentFilterCategory }, cat.name);
               
               return (
                 <div 
