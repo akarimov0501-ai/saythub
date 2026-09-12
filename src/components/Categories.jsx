@@ -122,10 +122,10 @@ export default function Categories({ websites = [], currentFilterCategory = 'all
             <div 
               key={cat.id}
               onClick={() => handleSelectCategory(cat.name)}
-              className={`category-card cursor-pointer rounded-2xl p-4 sm:p-5 flex flex-col items-center text-center transition-all duration-200 bg-white dark:bg-slate-800 border ${
+              className={`category-card cursor-pointer rounded-2xl p-4 sm:p-5 flex flex-col items-center text-center transition-all duration-200 bg-white dark:bg-[#0d1424] border ${
                 isActive 
-                  ? 'border-sky-500 ring-2 ring-sky-500/20 shadow-md bg-sky-50/20 dark:bg-sky-950/20' 
-                  : 'border-slate-100 dark:border-slate-700/70 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm hover:shadow-md'
+                  ? 'border-sky-500 ring-2 ring-sky-500/20 shadow-md bg-sky-50/20 dark:bg-sky-950/40' 
+                  : 'border-slate-100 dark:border-slate-800/90 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm hover:shadow-md'
               }`}
             >
               <div className={`w-12 h-12 rounded-xl ${cat.color} flex items-center justify-center mb-3 transition-transform group-hover:scale-105`}>
@@ -144,13 +144,13 @@ export default function Categories({ websites = [], currentFilterCategory = 'all
         {/* 4th Card: More / Boshqalar (Toggle) */}
         <div 
           onClick={handleToggleMore}
-          className={`category-card cursor-pointer rounded-2xl p-4 sm:p-5 flex flex-col items-center text-center transition-all duration-200 bg-white dark:bg-slate-800 border ${
+          className={`category-card cursor-pointer rounded-2xl p-4 sm:p-5 flex flex-col items-center text-center transition-all duration-200 bg-white dark:bg-[#0d1424] border ${
             isExpanded || isSecondaryActive
-              ? 'border-sky-500 ring-2 ring-sky-500/20 shadow-md bg-sky-50/30 dark:bg-sky-950/30' 
-              : 'border-slate-100 dark:border-slate-700/70 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm hover:shadow-md'
+              ? 'border-sky-500 ring-2 ring-sky-500/20 shadow-md bg-sky-50/30 dark:bg-sky-950/40' 
+              : 'border-slate-100 dark:border-slate-800/90 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm hover:shadow-md'
           }`}
         >
-          <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300 flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
+          <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
             {isExpanded ? (
               <ChevronUp className="w-6 h-6 text-sky-600 dark:text-sky-400" />
             ) : (
@@ -200,10 +200,10 @@ export default function Categories({ websites = [], currentFilterCategory = 'all
                 <div 
                   key={cat.id}
                   onClick={() => handleSelectCategory(cat.name)}
-                  className={`category-card cursor-pointer rounded-2xl p-4 sm:p-5 flex flex-col items-center text-center transition-all duration-200 bg-white dark:bg-slate-800 border ${
+                  className={`category-card cursor-pointer rounded-2xl p-4 sm:p-5 flex flex-col items-center text-center transition-all duration-200 bg-white dark:bg-[#0d1424] border ${
                     isActive 
-                      ? 'border-sky-500 ring-2 ring-sky-500/20 shadow-md bg-sky-50/20 dark:bg-sky-950/20' 
-                      : 'border-slate-100 dark:border-slate-700/70 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm hover:shadow'
+                      ? 'border-sky-500 ring-2 ring-sky-500/20 shadow-md bg-sky-50/20 dark:bg-sky-950/40' 
+                      : 'border-slate-100 dark:border-slate-800/90 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm hover:shadow'
                   }`}
                 >
                   <div className={`w-12 h-12 rounded-xl ${cat.color} flex items-center justify-center mb-3 transition-transform group-hover:scale-105`}>

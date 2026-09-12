@@ -331,7 +331,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex antialiased selection:bg-sky-500 selection:text-white">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#070b14] text-slate-800 dark:text-slate-100 flex antialiased selection:bg-sky-500 selection:text-white transition-colors duration-200">
       {/* Sidebar (Completely clean - no admin traces) */}
       <Sidebar
         currentTab={currentTab}
@@ -415,10 +415,10 @@ export default function App() {
         </div>
 
         {/* Footer (Clean - no admin button) */}
-        <footer className="mt-auto border-t border-slate-200/80 bg-white py-6 px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-3">
+        <footer className="mt-auto border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#0a0f1d] py-6 px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 dark:text-slate-500 gap-3 transition-colors">
           <p>© 2026 LinkHub. All useful websites curated in one place.</p>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-medium text-[11px]">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80 font-medium text-[11px]">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               Live Sync
             </span>

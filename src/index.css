@@ -168,69 +168,14 @@ body {
   animation: subtlePulse 3s infinite ease-in-out;
 }
 
-/* Dark Mode Overrides */
-.dark body {
-  background-color: #090d16;
+/* Universal Dark Mode Styles */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #070b14;
   color: #f1f5f9;
-}
-
-.dark aside {
-  background-color: #0b1120;
-  border-color: #1e293b;
-}
-
-.dark aside h1,
-.dark aside h4 {
-  color: #f8fafc;
-}
-
-.dark aside nav button,
-.dark aside nav a {
-  color: #94a3b8;
-}
-
-.dark aside nav button:hover,
-.dark aside nav a:hover {
-  background-color: #1e293b;
-  color: #f8fafc;
-}
-
-.dark .site-card {
-  background-color: #0f172a;
-  border-color: #1e293b;
-}
-
-.dark .site-card:hover {
-  border-color: #38bdf8;
-  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.5);
-}
-
-.dark .site-card h3,
-.dark .site-card h4 {
-  color: #f8fafc;
-}
-
-.dark .site-card p {
-  color: #94a3b8;
-}
-
-.dark .category-card {
-  background-color: #0f172a;
-  border-color: #1e293b;
-}
-
-.dark .category-card:hover {
-  border-color: #38bdf8;
-}
-
-.dark .category-card h4 {
-  color: #f8fafc;
-}
-
-.dark footer {
-  background-color: #0b1120;
-  border-color: #1e293b;
-  color: #64748b;
 }
 
 .dark .glass-input {
