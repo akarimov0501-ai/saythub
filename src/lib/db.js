@@ -1,43 +1,44 @@
-import { supabase, isSupabaseConfigured } from './supabase';
+import { firestore } from './firebase';
+import { 
+  collection, 
+  getDocs, 
+  setDoc, 
+  doc, 
+  deleteDoc, 
+  query, 
+  orderBy 
+} from 'firebase/firestore';
 import { initialWebsites } from '../data/websites';
 
 const LOCAL_STORAGE_CUSTOM_KEY = 'linkhub_custom_sites';
 const LOCAL_STORAGE_FAVORITES_KEY = 'linkhub_favorites';
 
 export const db = {
-  isCloudConnected: isSupabaseConfigured,
+  isCloudConnected: true,
+  cloudProvider: 'Firebase Firestore',
 
-  // Fetch all websites
+  // Fetch all websites from Firestore
   async getWebsites() {
-    // 1. If Supabase is connected, try loading from cloud database
-    if (isSupabaseConfigured && supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('websites')
-          .select('*')
-          .order('created_at', { ascending: false });
+    try {
+      const websitesRef = collection(firestore, 'websites');
+      const q = query(websitesRef, orderBy('createdAt', 'desc'));
+      const snapshot = await getDocs(q);
 
-        if (!error && data && data.length > 0) {
-          return data.map((row) => ({
-            id: row.id,
-            name: row.name,
-            description: row.description,
-            category: row.category,
-            tags: row.tags || [row.category],
-            tagColors: row.tag_colors || ['bg-slate-100 text-slate-600 border-slate-200'],
-            url: row.url,
-            popular: Boolean(row.popular),
-            trending: Boolean(row.trending),
-            new: Boolean(row.is_new),
-            iconType: row.icon_type || 'custom',
-          }));
-        }
-      } catch (err) {
-        console.warn('Could not fetch from Supabase, falling back to local data:', err);
+      if (!snapshot.empty) {
+        const sites = [];
+        snapshot.forEach((docSnap) => {
+          sites.push({
+            id: docSnap.id,
+            ...docSnap.data(),
+          });
+        });
+        return sites;
       }
+    } catch (err) {
+      console.warn('Firestore fetch error, using local fallback:', err);
     }
 
-    // 2. Fallback to LocalStorage + Default Curated Sites
+    // Fallback to local
     let customSites = [];
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_CUSTOM_KEY);
@@ -45,48 +46,31 @@ export const db = {
     } catch (e) {
       console.error(e);
     }
-
     return [...initialWebsites, ...customSites];
   },
 
-  // Save a new website
+  // Create or add a new website to Firestore
   async createWebsite(siteData) {
+    const id = siteData.id || ('site-' + Date.now());
     const newSite = {
-      id: 'site-' + Date.now(),
+      id,
       name: siteData.name,
-      description: siteData.description || 'User curated website.',
-      category: siteData.category,
-      tags: [siteData.category, 'Custom'],
-      tagColors: ['bg-sky-50 text-sky-700 border-sky-200', 'bg-slate-100 text-slate-600 border-slate-200'],
+      description: siteData.description || 'Foydalanuvchi tomonidan kiritilgan sayt.',
+      category: siteData.category || 'AI',
+      tags: siteData.tags || [siteData.category || 'AI', 'Custom'],
+      tagColors: siteData.tagColors || ['bg-sky-50 text-sky-700 border-sky-200', 'bg-slate-100 text-slate-600 border-slate-200'],
       url: siteData.url,
-      popular: false,
-      trending: false,
-      new: true,
-      iconType: 'custom',
+      popular: Boolean(siteData.popular),
+      trending: Boolean(siteData.trending),
+      new: siteData.new !== undefined ? Boolean(siteData.new) : true,
+      iconType: siteData.iconType || 'custom',
+      createdAt: new Date().toISOString()
     };
 
-    // If Supabase is connected, insert into cloud database
-    if (isSupabaseConfigured && supabase) {
-      try {
-        const { error } = await supabase.from('websites').insert([
-          {
-            id: newSite.id,
-            name: newSite.name,
-            description: newSite.description,
-            category: newSite.category,
-            tags: newSite.tags,
-            tag_colors: newSite.tagColors,
-            url: newSite.url,
-            popular: newSite.popular,
-            trending: newSite.trending,
-            is_new: newSite.new,
-            icon_type: newSite.iconType,
-          }
-        ]);
-        if (error) console.warn('Supabase insert error:', error);
-      } catch (err) {
-        console.error('Error inserting to Supabase:', err);
-      }
+    try {
+      await setDoc(doc(firestore, 'websites', id), newSite);
+    } catch (err) {
+      console.error('Firestore setDoc error:', err);
     }
 
     // Always persist to local storage as fallback
@@ -101,6 +85,34 @@ export const db = {
     return newSite;
   },
 
+  // Delete a website from Firestore (for Admin Panel)
+  async deleteWebsite(id) {
+    try {
+      await deleteDoc(doc(firestore, 'websites', id));
+    } catch (err) {
+      console.error('Firestore deleteDoc error:', err);
+    }
+
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_CUSTOM_KEY);
+      if (saved) {
+        const filtered = JSON.parse(saved).filter((s) => s.id !== id);
+        localStorage.setItem(LOCAL_STORAGE_CUSTOM_KEY, JSON.stringify(filtered));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  },
+
+  // Update a website in Firestore (for Admin Panel)
+  async updateWebsite(id, updatedData) {
+    try {
+      await setDoc(doc(firestore, 'websites', id), updatedData, { merge: true });
+    } catch (err) {
+      console.error('Firestore update error:', err);
+    }
+  },
+
   // Get Favorites
   async getFavorites() {
     let localFavs = [];
@@ -111,21 +123,15 @@ export const db = {
       console.error(e);
     }
 
-    if (isSupabaseConfigured && supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('user_favorites')
-          .select('site_id')
-          .eq('user_id', 'anonymous');
-
-        if (!error && data) {
-          const cloudFavs = data.map((d) => d.site_id);
-          // Merge unique
-          return Array.from(new Set([...localFavs, ...cloudFavs]));
-        }
-      } catch (err) {
-        console.warn('Failed to load favorites from Supabase:', err);
+    try {
+      const favRef = collection(firestore, 'user_favorites');
+      const snap = await getDocs(favRef);
+      if (!snap.empty) {
+        const cloudFavs = snap.docs.map((d) => d.data().siteId);
+        return Array.from(new Set([...localFavs, ...cloudFavs]));
       }
+    } catch (err) {
+      console.warn('Firestore favorites error:', err);
     }
 
     return localFavs;
@@ -133,7 +139,6 @@ export const db = {
 
   // Toggle Favorite
   async toggleFavorite(siteId, willBeFavorite) {
-    // Local storage update
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_FAVORITES_KEY);
       let list = saved ? JSON.parse(saved) : [];
@@ -147,21 +152,19 @@ export const db = {
       console.error(e);
     }
 
-    // Supabase update if connected
-    if (isSupabaseConfigured && supabase) {
-      try {
-        if (willBeFavorite) {
-          await supabase.from('user_favorites').insert([{ site_id: siteId, user_id: 'anonymous' }]);
-        } else {
-          await supabase
-            .from('user_favorites')
-            .delete()
-            .eq('site_id', siteId)
-            .eq('user_id', 'anonymous');
-        }
-      } catch (err) {
-        console.warn('Supabase favorite toggle error:', err);
+    try {
+      const favDocRef = doc(firestore, 'user_favorites', `anon_${siteId}`);
+      if (willBeFavorite) {
+        await setDoc(favDocRef, {
+          siteId,
+          userId: 'anonymous',
+          createdAt: new Date().toISOString()
+        });
+      } else {
+        await deleteDoc(favDocRef);
       }
+    } catch (err) {
+      console.warn('Firestore fav toggle error:', err);
     }
   }
 };

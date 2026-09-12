@@ -218,17 +218,10 @@ export default function App() {
         <footer className="mt-auto border-t border-slate-200/80 bg-white py-6 px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-3">
           <p>© 2026 LinkHub. All useful websites curated in one place.</p>
           <div className="flex items-center gap-2">
-            {db.isCloudConnected ? (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-[11px]">
-                <Cloud className="w-3 h-3 text-emerald-600" />
-                Supabase Connected
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200 font-medium text-[11px]">
-                <Database className="w-3 h-3 text-slate-400" />
-                Local & Cloud Ready
-              </span>
-            )}
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80 font-bold text-[11px] shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              Firebase Firestore Live (saythub-portal-2026)
+            </span>
           </div>
         </footer>
       </main>
