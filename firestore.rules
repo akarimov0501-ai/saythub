@@ -16,5 +16,8 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if true;
     }
+    match /user_upvotes/{upvoteId} {
+      allow read, write: if true;
+    }
   }
 }

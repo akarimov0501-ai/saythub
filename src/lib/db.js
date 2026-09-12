@@ -2,18 +2,21 @@ import { firestore } from './firebase';
 import { 
   collection, 
   getDocs, 
+  getDoc,
   setDoc, 
   doc, 
   deleteDoc, 
   query, 
   where,
   orderBy,
-  onSnapshot 
+  onSnapshot,
+  runTransaction
 } from 'firebase/firestore';
 import { initialWebsites, curatedWebsites } from '../data/websites';
 
 const LOCAL_STORAGE_CUSTOM_KEY = 'linkhub_custom_sites';
 const LOCAL_STORAGE_FAVORITES_KEY = 'linkhub_favorites';
+const LOCAL_STORAGE_UPVOTES_KEY = 'linkhub_user_upvotes';
 
 export const db = {
   isCloudConnected: true,
@@ -49,6 +52,44 @@ export const db = {
       console.error(e);
     }
     return [...initialWebsites, ...customSites];
+  },
+
+  // Realtime subscription to websites (Live-sync likes, edits, and additions across all devices)
+  subscribeToWebsites(callback) {
+    try {
+      const websitesRef = collection(firestore, 'websites');
+      const q = query(websitesRef, orderBy('createdAt', 'desc'));
+      return onSnapshot(q, (snapshot) => {
+        const cloudSites = [];
+        snapshot.forEach((docSnap) => {
+          cloudSites.push({
+            id: docSnap.id,
+            ...docSnap.data()
+          });
+        });
+
+        let localSites = [];
+        try {
+          const saved = localStorage.getItem(LOCAL_STORAGE_CUSTOM_KEY);
+          if (saved) localSites = JSON.parse(saved);
+        } catch (e) {
+          console.error(e);
+        }
+
+        const map = new Map();
+        localSites.forEach(item => { if (item && item.id) map.set(item.id, item); });
+        cloudSites.forEach(item => { if (item && item.id) map.set(item.id, item); });
+
+        const merged = Array.from(map.values());
+        merged.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        callback(merged);
+      }, (err) => {
+        console.warn('Websites snapshot listener error:', err);
+      });
+    } catch (err) {
+      console.error('Failed to set up websites listener:', err);
+      return () => {};
+    }
   },
 
   // Create or add a new website to Firestore
@@ -89,29 +130,92 @@ export const db = {
     return newSite;
   },
 
-  // Toggle Upvote / Like website (strictly 1 like per user)
-  async toggleUpvoteWebsite(id, willBeLiked, newLikesCount) {
+  // Toggle Upvote / Like website (atomic Firestore transaction: prevents race conditions & overwriting)
+  async toggleUpvoteWebsite(id, willBeLiked, userId = null) {
+    let finalLikes = 0;
     try {
-      await setDoc(doc(firestore, 'websites', id), { likesCount: newLikesCount }, { merge: true });
+      const siteRef = doc(firestore, 'websites', id);
+      finalLikes = await runTransaction(firestore, async (transaction) => {
+        const snap = await transaction.get(siteRef);
+        let currentLikes = 0;
+        if (snap.exists()) {
+          currentLikes = Number(snap.data().likesCount) || 0;
+        }
+        const nextLikes = willBeLiked ? currentLikes + 1 : Math.max(0, currentLikes - 1);
+        transaction.set(siteRef, { likesCount: nextLikes }, { merge: true });
+        return nextLikes;
+      });
     } catch (err) {
-      console.warn('Firestore toggle upvote error, saving locally:', err);
+      console.warn('Firestore toggle upvote transaction error:', err);
     }
 
+    // If user is authenticated, sync upvote record to user document
+    if (userId) {
+      try {
+        const userRef = doc(firestore, 'users', userId);
+        const userSnap = await getDoc(userRef);
+        let upvotedSites = [];
+        if (userSnap.exists() && Array.isArray(userSnap.data().upvotedSites)) {
+          upvotedSites = userSnap.data().upvotedSites;
+        }
+        if (willBeLiked) {
+          if (!upvotedSites.includes(id)) upvotedSites.push(id);
+        } else {
+          upvotedSites = upvotedSites.filter(siteId => siteId !== id);
+        }
+        await setDoc(userRef, { upvotedSites }, { merge: true });
+      } catch (err) {
+        console.warn('Error syncing upvote to user profile:', err);
+      }
+    }
+
+    // Persist to local storage
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_CUSTOM_KEY);
       if (saved) {
-        const list = JSON.parse(saved).map(s => s.id === id ? { ...s, likesCount: newLikesCount } : s);
+        const list = JSON.parse(saved).map(s => s.id === id ? { ...s, likesCount: finalLikes } : s);
         localStorage.setItem(LOCAL_STORAGE_CUSTOM_KEY, JSON.stringify(list));
       }
     } catch (e) {
       console.error(e);
     }
-    return newLikesCount;
+
+    return finalLikes;
+  },
+
+  // Get User Upvotes (from localStorage and Firestore if logged in)
+  async getUserUpvotes(userId = null) {
+    let localUpvotes = [];
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_UPVOTES_KEY);
+      if (saved) localUpvotes = JSON.parse(saved);
+    } catch (e) {
+      console.error(e);
+    }
+
+    if (!userId) {
+      return localUpvotes;
+    }
+
+    try {
+      const userRef = doc(firestore, 'users', userId);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists() && Array.isArray(userSnap.data().upvotedSites)) {
+        const cloudUpvotes = userSnap.data().upvotedSites;
+        const combined = Array.from(new Set([...localUpvotes, ...cloudUpvotes]));
+        localStorage.setItem(LOCAL_STORAGE_UPVOTES_KEY, JSON.stringify(combined));
+        return combined;
+      }
+    } catch (err) {
+      console.warn('Firestore getUserUpvotes error:', err);
+    }
+
+    return localUpvotes;
   },
 
   // Legacy fallback
   async upvoteWebsite(id, currentLikes = 0) {
-    return this.toggleUpvoteWebsite(id, true, (Number(currentLikes) || 0) + 1);
+    return this.toggleUpvoteWebsite(id, true);
   },
 
   // Seed curated websites to Firestore and Local Storage

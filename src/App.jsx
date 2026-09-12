@@ -86,10 +86,11 @@ export default function App() {
     async function loadData() {
       try {
         setIsLoading(true);
-        const [sites, favs, subs] = await Promise.all([
+        const [sites, favs, subs, upvotes] = await Promise.all([
           db.getWebsites(),
           db.getFavorites(user?.uid),
-          db.getSubmissions()
+          db.getSubmissions(),
+          db.getUserUpvotes(user?.uid)
         ]);
         if (sites) {
           setAllWebsites(sites);
@@ -101,6 +102,9 @@ export default function App() {
         }
         if (subs) {
           setSubmissions(subs);
+        }
+        if (upvotes) {
+          setUserUpvotes(upvotes);
         }
       } catch (err) {
         console.error('Data loading error:', err);
@@ -123,11 +127,23 @@ export default function App() {
         setUser(userData);
         localStorage.setItem('linkhub_user', JSON.stringify(userData));
         try {
-          const userFavs = await db.getFavorites(fbUser.uid);
+          const [userFavs, userUpvs] = await Promise.all([
+            db.getFavorites(fbUser.uid),
+            db.getUserUpvotes(fbUser.uid)
+          ]);
           if (userFavs) setFavorites(userFavs);
+          if (userUpvs) setUserUpvotes(userUpvs);
         } catch (e) {
           console.error(e);
         }
+      }
+    });
+
+    // Realtime Websites & Likes Listener (Live sync across all users and devices)
+    const unsubscribeWebsites = db.subscribeToWebsites((liveSites) => {
+      if (liveSites && liveSites.length > 0) {
+        setAllWebsites(liveSites);
+        setIsLoading(false);
       }
     });
 
@@ -156,6 +172,7 @@ export default function App() {
     window.addEventListener('popstate', handleRoute);
     return () => {
       unsubscribeAuth();
+      if (unsubscribeWebsites) unsubscribeWebsites();
       if (unsubscribeSubmissions) unsubscribeSubmissions();
       window.removeEventListener('hashchange', handleRoute);
       window.removeEventListener('popstate', handleRoute);
@@ -277,6 +294,16 @@ export default function App() {
     }
   };
 
+  // Keep selectedSiteForModal synced with live allWebsites data
+  useEffect(() => {
+    if (selectedSiteForModal) {
+      const live = allWebsites.find((s) => s.id === selectedSiteForModal.id);
+      if (live && live.likesCount !== selectedSiteForModal.likesCount) {
+        setSelectedSiteForModal(live);
+      }
+    }
+  }, [allWebsites]);
+
   // Toggle Upvote / Like website (strictly limited to 1 like per user per site)
   const handleToggleUpvote = async (siteId) => {
     const isCurrentlyLiked = userUpvotes.includes(siteId);
@@ -291,13 +318,13 @@ export default function App() {
       console.error(e);
     }
 
-    let calculatedNewLikes = 0;
+    // Optimistic UI update: instantly update UI
     setAllWebsites((prev) =>
       prev.map((site) => {
         if (site.id === siteId) {
           const current = Number(site.likesCount) || 0;
-          calculatedNewLikes = isCurrentlyLiked ? Math.max(0, current - 1) : current + 1;
-          return { ...site, likesCount: calculatedNewLikes };
+          const delta = isCurrentlyLiked ? -1 : 1;
+          return { ...site, likesCount: Math.max(0, current + delta) };
         }
         return site;
       })
@@ -306,8 +333,8 @@ export default function App() {
     if (selectedSiteForModal && selectedSiteForModal.id === siteId) {
       setSelectedSiteForModal((prev) => {
         const current = Number(prev.likesCount) || 0;
-        const next = isCurrentlyLiked ? Math.max(0, current - 1) : current + 1;
-        return { ...prev, likesCount: next };
+        const delta = isCurrentlyLiked ? -1 : 1;
+        return { ...prev, likesCount: Math.max(0, current + delta) };
       });
     }
 
@@ -316,7 +343,12 @@ export default function App() {
       isCurrentlyLiked ? 'ℹ' : '❤️'
     );
 
-    await db.toggleUpvoteWebsite(siteId, !isCurrentlyLiked, calculatedNewLikes);
+    try {
+      // Atomic server transaction: prevents race conditions & syncs live to all clients
+      await db.toggleUpvoteWebsite(siteId, !isCurrentlyLiked, user?.uid);
+    } catch (err) {
+      console.error('Failed to submit upvote:', err);
+    }
   };
 
   // Admin: Seed curated websites
