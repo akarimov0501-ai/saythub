@@ -24,6 +24,14 @@ export default function App() {
   const [currentFilterCategory, setFilterCategory] = useState('all');
   const [currentTab, setTab] = useState('popular');
   const [selectedSiteForModal, setSelectedSiteForModal] = useState(null);
+  const [userUpvotes, setUserUpvotes] = useState(() => {
+    try {
+      const saved = localStorage.getItem('linkhub_user_upvotes');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isSubmitModalOpen, setSubmitModalOpen] = useState(false);
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
@@ -260,16 +268,46 @@ export default function App() {
     }
   };
 
-  // Upvote / Like website
-  const handleUpvote = async (siteId, currentLikes = 0) => {
-    const newLikes = (Number(currentLikes) || 0) + 1;
-    setAllWebsites((prev) => 
-      prev.map(site => site.id === siteId ? { ...site, likesCount: newLikes } : site)
-    );
-    if (selectedSiteForModal && selectedSiteForModal.id === siteId) {
-      setSelectedSiteForModal(prev => ({ ...prev, likesCount: newLikes }));
+  // Toggle Upvote / Like website (strictly limited to 1 like per user per site)
+  const handleToggleUpvote = async (siteId) => {
+    const isCurrentlyLiked = userUpvotes.includes(siteId);
+    const nextUpvotes = isCurrentlyLiked
+      ? userUpvotes.filter((id) => id !== siteId)
+      : [...userUpvotes, siteId];
+
+    setUserUpvotes(nextUpvotes);
+    try {
+      localStorage.setItem('linkhub_user_upvotes', JSON.stringify(nextUpvotes));
+    } catch (e) {
+      console.error(e);
     }
-    await db.upvoteWebsite(siteId, currentLikes);
+
+    let calculatedNewLikes = 0;
+    setAllWebsites((prev) =>
+      prev.map((site) => {
+        if (site.id === siteId) {
+          const current = Number(site.likesCount) || 0;
+          calculatedNewLikes = isCurrentlyLiked ? Math.max(0, current - 1) : current + 1;
+          return { ...site, likesCount: calculatedNewLikes };
+        }
+        return site;
+      })
+    );
+
+    if (selectedSiteForModal && selectedSiteForModal.id === siteId) {
+      setSelectedSiteForModal((prev) => {
+        const current = Number(prev.likesCount) || 0;
+        const next = isCurrentlyLiked ? Math.max(0, current - 1) : current + 1;
+        return { ...prev, likesCount: next };
+      });
+    }
+
+    triggerToast(
+      isCurrentlyLiked ? "Ovoz qaytarib olindi" : "Ovozingiz qabul qilindi! ❤️",
+      isCurrentlyLiked ? 'ℹ' : '❤️'
+    );
+
+    await db.toggleUpvoteWebsite(siteId, !isCurrentlyLiked, calculatedNewLikes);
   };
 
   // Admin: Seed curated websites
@@ -476,7 +514,8 @@ export default function App() {
             toggleBookmark={toggleBookmark}
             resetFilters={resetFilters}
             onOpenDetail={(site) => setSelectedSiteForModal(site)}
-            onUpvote={handleUpvote}
+            userUpvotes={userUpvotes}
+            onToggleUpvote={handleToggleUpvote}
             onSelectTag={handleSelectTag}
           />
 
@@ -508,8 +547,9 @@ export default function App() {
         isOpen={Boolean(selectedSiteForModal)}
         onClose={() => setSelectedSiteForModal(null)}
         isBookmarked={selectedSiteForModal ? favorites.includes(selectedSiteForModal.id) : false}
+        isUpvoted={selectedSiteForModal ? userUpvotes.includes(selectedSiteForModal.id) : false}
         onToggleBookmark={toggleBookmark}
-        onUpvote={handleUpvote}
+        onToggleUpvote={handleToggleUpvote}
         onSelectTag={handleSelectTag}
         triggerToast={triggerToast}
       />

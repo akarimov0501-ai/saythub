@@ -10,16 +10,10 @@ export default function FeaturedWebsites({
   toggleBookmark, 
   resetFilters,
   onOpenDetail,
-  onUpvote,
+  userUpvotes = [],
+  onToggleUpvote,
   onSelectTag
 }) {
-  const userUpvotes = (() => {
-    try {
-      return JSON.parse(localStorage.getItem('linkhub_user_upvotes') || '[]');
-    } catch {
-      return [];
-    }
-  })();
 
   return (
     <section id="featured-section">
@@ -142,20 +136,20 @@ export default function FeaturedWebsites({
 
                     {/* Card Top Actions: Bookmark & Upvote */}
                     <div className="flex items-center gap-1">
-                      {/* Upvote Button */}
+                      {/* Upvote Button (Toggle: strictly 1 like per user) */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (onUpvote) onUpvote(site.id, site.likesCount || 0);
+                          if (onToggleUpvote) onToggleUpvote(site.id);
                         }}
-                        title={isUpvoted ? "Ovoz berilgan" : "Like / Ovoz berish"}
-                        className={`p-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition ${
+                        title={isUpvoted ? "Ovozni qaytarib olish" : "Like / Ovoz berish"}
+                        className={`p-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition cursor-pointer active:scale-90 ${
                           isUpvoted
-                            ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/50 dark:text-rose-400'
+                            ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/50 dark:text-rose-400 font-bold'
                             : 'text-slate-400 dark:text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-slate-800'
                         }`}
                       >
-                        <Heart className={`w-4 h-4 ${isUpvoted ? 'fill-rose-500 dark:fill-rose-400' : ''}`} />
+                        <Heart className={`w-4 h-4 transition-transform duration-200 ${isUpvoted ? 'fill-rose-500 dark:fill-rose-400 scale-110' : ''}`} />
                         <span className="text-[11px]">{site.likesCount || 0}</span>
                       </button>
 

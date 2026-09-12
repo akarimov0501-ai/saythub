@@ -88,30 +88,29 @@ export const db = {
     return newSite;
   },
 
-  // Upvote / Like website
-  async upvoteWebsite(id, currentLikes = 0) {
-    const newLikes = (Number(currentLikes) || 0) + 1;
+  // Toggle Upvote / Like website (strictly 1 like per user)
+  async toggleUpvoteWebsite(id, willBeLiked, newLikesCount) {
     try {
-      await setDoc(doc(firestore, 'websites', id), { likesCount: newLikes }, { merge: true });
+      await setDoc(doc(firestore, 'websites', id), { likesCount: newLikesCount }, { merge: true });
     } catch (err) {
-      console.warn('Firestore upvote error, saving locally:', err);
+      console.warn('Firestore toggle upvote error, saving locally:', err);
     }
 
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_CUSTOM_KEY);
       if (saved) {
-        const list = JSON.parse(saved).map(s => s.id === id ? { ...s, likesCount: newLikes } : s);
+        const list = JSON.parse(saved).map(s => s.id === id ? { ...s, likesCount: newLikesCount } : s);
         localStorage.setItem(LOCAL_STORAGE_CUSTOM_KEY, JSON.stringify(list));
-      }
-      const userUpvotes = JSON.parse(localStorage.getItem('linkhub_user_upvotes') || '[]');
-      if (!userUpvotes.includes(id)) {
-        userUpvotes.push(id);
-        localStorage.setItem('linkhub_user_upvotes', JSON.stringify(userUpvotes));
       }
     } catch (e) {
       console.error(e);
     }
-    return newLikes;
+    return newLikesCount;
+  },
+
+  // Legacy fallback
+  async upvoteWebsite(id, currentLikes = 0) {
+    return this.toggleUpvoteWebsite(id, true, (Number(currentLikes) || 0) + 1);
   },
 
   // Seed curated websites to Firestore and Local Storage

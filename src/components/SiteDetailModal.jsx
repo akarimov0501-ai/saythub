@@ -20,21 +20,13 @@ export default function SiteDetailModal({
   isOpen,
   onClose,
   isBookmarked,
+  isUpvoted,
   onToggleBookmark,
-  onUpvote,
+  onToggleUpvote,
   onSelectTag,
   triggerToast
 }) {
   const [copied, setCopied] = useState(false);
-  const [isUpvotedLocal, setIsUpvotedLocal] = useState(() => {
-    if (!site) return false;
-    try {
-      const list = JSON.parse(localStorage.getItem('linkhub_user_upvotes') || '[]');
-      return list.includes(site.id);
-    } catch {
-      return false;
-    }
-  });
 
   if (!isOpen || !site) return null;
 
@@ -48,13 +40,7 @@ export default function SiteDetailModal({
 
   const handleUpvoteClick = (e) => {
     e.stopPropagation();
-    if (isUpvotedLocal) {
-      if (triggerToast) triggerToast("Siz ushbu saytga allaqachon ovoz bergansiz!", 'ℹ');
-      return;
-    }
-    setIsUpvotedLocal(true);
-    onUpvote(site.id, site.likesCount || 0);
-    if (triggerToast) triggerToast("Ovozingiz qabul qilindi! Rahmat ❤️", '✓');
+    if (onToggleUpvote) onToggleUpvote(site.id);
   };
 
   const shareToTelegram = () => {
@@ -231,19 +217,21 @@ export default function SiteDetailModal({
               <span className="hidden sm:inline">{isBookmarked ? 'Saqlangan' : 'Saqlash'}</span>
             </button>
 
-            {/* Upvote button */}
+            {/* Upvote button (Toggle: strictly 1 like per user) */}
             <button
               onClick={handleUpvoteClick}
-              disabled={isUpvotedLocal}
-              className={`p-2.5 rounded-xl border transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
-                isUpvotedLocal
-                  ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800 opacity-90'
+              className={`p-2.5 rounded-xl border transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 ${
+                isUpvoted
+                  ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800 font-bold'
                   : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50/50'
               }`}
-              title="Ovoz berish / Like"
+              title={isUpvoted ? "Ovozni qaytarib olish" : "Ovoz berish / Like"}
             >
-              <Heart className={`w-4 h-4 ${isUpvotedLocal ? 'fill-rose-600 dark:fill-rose-400 text-rose-600 dark:text-rose-400' : ''}`} />
+              <Heart className={`w-4 h-4 transition-transform duration-200 ${isUpvoted ? 'fill-rose-600 dark:fill-rose-400 text-rose-600 dark:text-rose-400 scale-110' : ''}`} />
               <span>{site.likesCount || 0}</span>
+              <span className="hidden sm:inline text-[11px] font-normal text-slate-400 ml-0.5">
+                {isUpvoted ? '(Ovoz berilgan)' : ''}
+              </span>
             </button>
           </div>
 
