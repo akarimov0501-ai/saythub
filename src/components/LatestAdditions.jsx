@@ -1,9 +1,17 @@
 import React from 'react';
 import { Bookmark, ArrowRight } from 'lucide-react';
 import BrandIcon from './BrandIcon';
-import { latestAdditions } from '../data/websites';
 
-export default function LatestAdditions({ favorites, toggleBookmark, setTab }) {
+export default function LatestAdditions({ websites = [], favorites, toggleBookmark, setTab }) {
+  // Show up to 6 latest sites from database
+  const latest = (websites && websites.length > 0)
+    ? websites.filter(w => w.new).slice(0, 6)
+    : [];
+
+  if (latest.length === 0) {
+    return null; // Gracefully hide when no recent additions exist yet
+  }
+
   return (
     <section id="latest-section" className="pt-2">
       <div className="flex items-center justify-between mb-5">
@@ -18,7 +26,7 @@ export default function LatestAdditions({ favorites, toggleBookmark, setTab }) {
 
       {/* Latest Horizontal Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-        {latestAdditions.map((item) => {
+        {latest.map((item) => {
           const isBookmarked = favorites.includes(item.id);
           return (
             <div 
@@ -27,7 +35,7 @@ export default function LatestAdditions({ favorites, toggleBookmark, setTab }) {
               className="site-card bg-white rounded-2xl p-3 flex items-center justify-between group cursor-pointer"
             >
               <div className="flex items-center gap-3 overflow-hidden">
-                <BrandIcon type={item.iconType} name={item.name} size="small" />
+                <BrandIcon type={item.iconType} name={item.name} logoUrl={item.logoUrl} size="small" />
                 <div className="truncate">
                   <h4 className="font-bold text-slate-900 text-sm group-hover:text-sky-600 transition-colors leading-tight truncate">
                     {item.name}

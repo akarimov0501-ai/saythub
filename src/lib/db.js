@@ -64,6 +64,7 @@ export const db = {
       trending: Boolean(siteData.trending),
       new: siteData.new !== undefined ? Boolean(siteData.new) : true,
       iconType: siteData.iconType || 'custom',
+      logoUrl: siteData.logoUrl || '',
       createdAt: new Date().toISOString()
     };
 

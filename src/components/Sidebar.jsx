@@ -22,8 +22,7 @@ export default function Sidebar({
   favoritesCount, 
   openCreateModal,
   isMobileOpen,
-  closeMobileSidebar,
-  onOpenAdmin
+  closeMobileSidebar
 }) {
   return (
     <>
@@ -215,26 +214,15 @@ export default function Sidebar({
 
         {/* User Profile Bottom */}
         <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-          <div 
-            onClick={onOpenAdmin}
-            className="flex items-center gap-3 cursor-pointer group flex-1"
-            title="Open Admin Console"
-          >
-            <div className="w-9 h-9 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-sm group-hover:ring-2 group-hover:ring-blue-400 transition">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">
               MA
             </div>
             <div>
-              <h4 className="text-sm font-bold text-slate-800 leading-tight group-hover:text-blue-600 transition">MA Studio</h4>
-              <span className="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
-                Admin Console →
-              </span>
+              <h4 className="text-sm font-bold text-slate-800 leading-tight">MA Studio</h4>
             </div>
           </div>
-          <button 
-            onClick={onOpenAdmin}
-            title="Open Admin Panel"
-            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition"
-          >
+          <button className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition">
             <MoreHorizontal className="w-5 h-5" />
           </button>
         </div>

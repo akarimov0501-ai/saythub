@@ -21,11 +21,16 @@ export default function App() {
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [toast, setToast] = useState(null);
-  
-  // Admin View State
-  const [isAdminView, setIsAdminView] = useState(() => {
-    return window.location.hash === '#admin';
-  });
+
+  // Secret Admin Path Detection: only accessed via /maadmin103 or #/maadmin103
+  const checkIsAdmin = () => {
+    const path = window.location.pathname.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+    return path === '/maadmin103' || path === '/maadmin103/' || 
+           hash === '#/maadmin103' || hash === '#maadmin103';
+  };
+
+  const [isAdminView, setIsAdminView] = useState(checkIsAdmin);
 
   const searchInputRef = useRef(null);
 
@@ -38,7 +43,7 @@ export default function App() {
           db.getWebsites(),
           db.getFavorites()
         ]);
-        if (sites && sites.length > 0) {
+        if (sites) {
           setAllWebsites(sites);
         }
         if (favs) {
@@ -52,12 +57,17 @@ export default function App() {
     }
     loadData();
 
-    // Listen for hash changes
-    const handleHash = () => {
-      setIsAdminView(window.location.hash === '#admin');
+    // Listen for URL route changes (popstate & hashchange)
+    const handleRoute = () => {
+      setIsAdminView(checkIsAdmin());
     };
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
+
+    window.addEventListener('hashchange', handleRoute);
+    window.addEventListener('popstate', handleRoute);
+    return () => {
+      window.removeEventListener('hashchange', handleRoute);
+      window.removeEventListener('popstate', handleRoute);
+    };
   }, []);
 
   // Show Toast
@@ -139,9 +149,9 @@ export default function App() {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter((site) =>
         site.name.toLowerCase().includes(q) ||
-        site.description.toLowerCase().includes(q) ||
-        site.category.toLowerCase().includes(q) ||
-        site.tags.some((tag) => tag.toLowerCase().includes(q))
+        (site.description || '').toLowerCase().includes(q) ||
+        (site.category || '').toLowerCase().includes(q) ||
+        (site.tags || []).some((tag) => tag.toLowerCase().includes(q))
       );
     }
 
@@ -149,14 +159,14 @@ export default function App() {
     if (currentFilterCategory !== 'all') {
       const cat = currentFilterCategory.toLowerCase();
       list = list.filter((site) =>
-        site.category.toLowerCase().includes(cat) ||
-        site.tags.some((t) => t.toLowerCase().includes(cat))
+        (site.category || '').toLowerCase().includes(cat) ||
+        (site.tags || []).some((t) => t.toLowerCase().includes(cat))
       );
     }
 
     // Tab filter
     if (currentTab === 'new') {
-      list = list.filter((site) => site.new || site.id === 'unsplash');
+      list = list.filter((site) => site.new);
     } else if (currentTab === 'trending') {
       list = list.filter((site) => site.trending);
     } else if (currentTab === 'favorites_only') {
@@ -182,7 +192,7 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // If Admin View is active, render Admin Console
+  // If Secret Admin Route is accessed (/maadmin103), render Admin Console
   if (isAdminView) {
     return (
       <>
@@ -194,6 +204,9 @@ export default function App() {
           onExitAdmin={() => {
             setIsAdminView(false);
             window.location.hash = '';
+            if (window.location.pathname.includes('maadmin103')) {
+              window.history.pushState(null, '', '/');
+            }
           }}
         />
         <Toast toast={toast} />
@@ -203,7 +216,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex antialiased selection:bg-sky-500 selection:text-white">
-      {/* Sidebar */}
+      {/* Sidebar (Completely clean - no admin traces) */}
       <Sidebar
         currentTab={currentTab}
         setTab={setTab}
@@ -213,15 +226,11 @@ export default function App() {
         openCreateModal={() => setCreateModalOpen(true)}
         isMobileOpen={isMobileSidebarOpen}
         closeMobileSidebar={() => setMobileSidebarOpen(false)}
-        onOpenAdmin={() => {
-          setIsAdminView(true);
-          window.location.hash = '#admin';
-        }}
       />
 
       {/* Main Content Area */}
       <main className="flex-1 md:ml-64 lg:ml-72 min-w-0 flex flex-col">
-        {/* Mobile Header */}
+        {/* Mobile Header (Clean - no admin button) */}
         <div className="md:hidden bg-slate-900 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow">
           <div className="flex items-center gap-2">
             <button 
@@ -232,24 +241,13 @@ export default function App() {
             </button>
             <span className="font-bold text-base">LinkHub</span>
           </div>
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => {
-                setIsAdminView(true);
-                window.location.hash = '#admin';
-              }} 
-              className="px-2.5 py-1 bg-slate-800 text-sky-400 border border-slate-700 text-xs font-semibold rounded-lg"
-            >
-              Admin
-            </button>
-            <button 
-              onClick={() => setCreateModalOpen(true)} 
-              className="px-3 py-1 bg-sky-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Add
-            </button>
-          </div>
+          <button 
+            onClick={() => setCreateModalOpen(true)} 
+            className="px-3 py-1 bg-sky-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add Site
+          </button>
         </div>
 
         {/* Cosmic Hero Banner */}
@@ -279,30 +277,22 @@ export default function App() {
             resetFilters={resetFilters}
           />
 
-          {/* Latest Additions */}
+          {/* Latest Additions (shows when sites exist) */}
           <LatestAdditions
+            websites={allWebsites}
             favorites={favorites}
             toggleBookmark={toggleBookmark}
             setTab={setTab}
           />
         </div>
 
-        {/* Footer */}
+        {/* Footer (Clean - no admin button) */}
         <footer className="mt-auto border-t border-slate-200/80 bg-white py-6 px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-3">
           <p>© 2026 LinkHub. All useful websites curated in one place.</p>
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => {
-                setIsAdminView(true);
-                window.location.hash = '#admin';
-              }}
-              className="hover:text-sky-600 transition font-medium underline"
-            >
-              Admin Console
-            </button>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80 font-bold text-[11px] shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-              Firebase Firestore Live (saythub-portal-2026)
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-medium text-[11px]">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              Live Sync
             </span>
           </div>
         </footer>

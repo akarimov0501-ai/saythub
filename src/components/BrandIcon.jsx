@@ -1,9 +1,30 @@
 import React from 'react';
 
-export default function BrandIcon({ type, name, size = 'default' }) {
+export default function BrandIcon({ type, name, logoUrl, size = 'default' }) {
   const containerClass = size === 'small' 
-    ? "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
-    : "w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm";
+    ? "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
+    : "w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden";
+
+  // If a direct Logo URL is provided, display the image!
+  if (logoUrl && logoUrl.trim()) {
+    return (
+      <div className={`${containerClass} bg-white border border-slate-200/80 p-1.5`}>
+        <img 
+          src={logoUrl} 
+          alt={name || 'Website logo'} 
+          className="w-full h-full object-contain rounded-lg"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+            const fallback = e.currentTarget.parentElement?.querySelector('.fallback-initials');
+            if (fallback) fallback.style.display = 'flex';
+          }}
+        />
+        <div className="fallback-initials w-full h-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white font-bold text-xs rounded-lg items-center justify-center hidden">
+          {(name || 'W').substring(0, 2).toUpperCase()}
+        </div>
+      </div>
+    );
+  }
 
   switch (type) {
     case 'chatgpt':

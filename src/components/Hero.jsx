@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Search, ChevronDown, Sun } from 'lucide-react';
 
 export default function Hero({ 
@@ -8,6 +8,9 @@ export default function Hero({
   setFilterCategory,
   searchInputRef
 }) {
+  const [activeNav, setActiveNav] = useState('discover');
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
+
   const quickTags = [
     { label: 'AI', value: 'AI' },
     { label: 'Design', value: 'Design' },
@@ -19,21 +22,104 @@ export default function Hero({
     { label: '···', value: 'all' }
   ];
 
+  const handleNavClick = (navId, catFilter) => {
+    setActiveNav(navId);
+    setFilterCategory(catFilter);
+    setIsMoreOpen(false);
+  };
+
   return (
     <section className="hero-cosmic text-white pt-6 pb-12 px-4 sm:px-8 lg:px-12 relative">
       {/* Top Navigation Bar inside Hero */}
       <div className="max-w-7xl mx-auto flex items-center justify-between mb-12 relative z-10">
-        <nav className="hidden sm:flex items-center gap-6 text-sm font-medium text-slate-300">
-          <a href="#" className="text-white font-semibold relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:right-0 after:h-0.5 after:bg-white after:rounded-full">
+        <nav className="hidden sm:flex items-center gap-7 text-sm font-medium text-slate-300 relative">
+          <button 
+            onClick={() => handleNavClick('discover', 'all')}
+            className={`transition relative pb-0.5 ${
+              activeNav === 'discover' 
+                ? 'text-white font-bold after:content-[\'\'] after:absolute after:-bottom-1 after:left-0 after:right-0 after:h-0.5 after:bg-white after:rounded-full' 
+                : 'hover:text-white'
+            }`}
+          >
             Discover
-          </a>
-          <a href="#" className="hover:text-white transition">Tools</a>
-          <a href="#" className="hover:text-white transition">Inspiration</a>
-          <a href="#" className="hover:text-white transition">Learn</a>
-          <a href="#" className="hover:text-white transition">Build</a>
-          <div className="relative group cursor-pointer flex items-center gap-1 hover:text-white transition">
-            <span>More</span>
-            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
+
+          <button 
+            onClick={() => handleNavClick('tools', 'Productivity')}
+            className={`transition relative pb-0.5 ${
+              activeNav === 'tools' 
+                ? 'text-white font-bold after:content-[\'\'] after:absolute after:-bottom-1 after:left-0 after:right-0 after:h-0.5 after:bg-white after:rounded-full' 
+                : 'hover:text-white'
+            }`}
+          >
+            Tools
+          </button>
+
+          <button 
+            onClick={() => handleNavClick('inspiration', 'Design')}
+            className={`transition relative pb-0.5 ${
+              activeNav === 'inspiration' 
+                ? 'text-white font-bold after:content-[\'\'] after:absolute after:-bottom-1 after:left-0 after:right-0 after:h-0.5 after:bg-white after:rounded-full' 
+                : 'hover:text-white'
+            }`}
+          >
+            Inspiration
+          </button>
+
+          <button 
+            onClick={() => handleNavClick('learn', 'Education')}
+            className={`transition relative pb-0.5 ${
+              activeNav === 'learn' 
+                ? 'text-white font-bold after:content-[\'\'] after:absolute after:-bottom-1 after:left-0 after:right-0 after:h-0.5 after:bg-white after:rounded-full' 
+                : 'hover:text-white'
+            }`}
+          >
+            Learn
+          </button>
+
+          <button 
+            onClick={() => handleNavClick('build', 'Development')}
+            className={`transition relative pb-0.5 ${
+              activeNav === 'build' 
+                ? 'text-white font-bold after:content-[\'\'] after:absolute after:-bottom-1 after:left-0 after:right-0 after:h-0.5 after:bg-white after:rounded-full' 
+                : 'hover:text-white'
+            }`}
+          >
+            Build
+          </button>
+
+          {/* More Dropdown Menu */}
+          <div className="relative">
+            <button 
+              onClick={() => setIsMoreOpen(!isMoreOpen)}
+              className="flex items-center gap-1 hover:text-white transition pb-0.5"
+            >
+              <span>More</span>
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+
+            {isMoreOpen && (
+              <div className="absolute left-0 mt-2 w-44 bg-slate-900 border border-slate-700/80 rounded-xl shadow-2xl py-1 z-30 animate-toast">
+                <button 
+                  onClick={() => handleNavClick('more_ai', 'AI')}
+                  className="w-full text-left px-4 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 transition"
+                >
+                  ⚡ AI Tools
+                </button>
+                <button 
+                  onClick={() => handleNavClick('more_finance', 'Finance')}
+                  className="w-full text-left px-4 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 transition"
+                >
+                  💰 Finance
+                </button>
+                <button 
+                  onClick={() => handleNavClick('more_entertainment', 'Entertainment')}
+                  className="w-full text-left px-4 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 transition"
+                >
+                  🎬 Entertainment
+                </button>
+              </div>
+            )}
           </div>
         </nav>
 

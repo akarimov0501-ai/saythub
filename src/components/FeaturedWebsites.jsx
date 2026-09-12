@@ -91,7 +91,7 @@ export default function FeaturedWebsites({
                 <div>
                   <div className="flex items-start justify-between mb-3.5">
                     <div className="flex items-center gap-3.5">
-                      <BrandIcon type={site.iconType} name={site.name} />
+                      <BrandIcon type={site.iconType} name={site.name} logoUrl={site.logoUrl} />
                       <div>
                         <h3 className="font-bold text-slate-900 text-base leading-tight group-hover:text-sky-600 transition-colors flex items-center gap-1.5">
                           {site.name}

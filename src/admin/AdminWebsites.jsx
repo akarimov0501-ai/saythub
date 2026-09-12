@@ -9,7 +9,9 @@ import {
   X, 
   Sparkles,
   TrendingUp,
-  Clock
+  Clock,
+  Image,
+  Wand2
 } from 'lucide-react';
 import BrandIcon from '../components/BrandIcon';
 
@@ -24,10 +26,11 @@ export default function AdminWebsites({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSite, setEditingSite] = useState(null);
 
-  // Form State
+  // Form State with logoUrl
   const [formData, setFormData] = useState({
     name: '',
     url: '',
+    logoUrl: '',
     category: 'AI',
     description: '',
     tags: 'AI, Productivity',
@@ -42,6 +45,7 @@ export default function AdminWebsites({
     setFormData({
       name: '',
       url: '',
+      logoUrl: '',
       category: 'AI',
       description: '',
       tags: 'AI, Productivity',
@@ -58,6 +62,7 @@ export default function AdminWebsites({
     setFormData({
       name: site.name,
       url: site.url,
+      logoUrl: site.logoUrl || '',
       category: site.category,
       description: site.description || '',
       tags: (site.tags || []).join(', '),
@@ -67,6 +72,22 @@ export default function AdminWebsites({
       iconType: site.iconType || 'custom'
     });
     setIsModalOpen(true);
+  };
+
+  // Helper to auto-generate high-res favicon/logo from website URL
+  const autoFetchFavicon = () => {
+    if (!formData.url) return;
+    try {
+      const fullUrl = formData.url.startsWith('http') ? formData.url : `https://${formData.url}`;
+      const domain = new URL(fullUrl).hostname;
+      const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+      setFormData(prev => ({
+        ...prev,
+        logoUrl: faviconUrl
+      }));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleFormSubmit = async (e) => {
@@ -81,6 +102,7 @@ export default function AdminWebsites({
     const sitePayload = {
       name: formData.name,
       url: formData.url.startsWith('http') ? formData.url : `https://${formData.url}`,
+      logoUrl: formData.logoUrl.trim(),
       category: formData.category,
       description: formData.description,
       tags: parsedTags.length > 0 ? parsedTags : [formData.category],
@@ -153,7 +175,7 @@ export default function AdminWebsites({
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50 text-xs font-bold text-slate-500 uppercase border-b border-slate-200">
               <tr>
-                <th className="px-5 py-3.5">Website</th>
+                <th className="px-5 py-3.5">Logo & Website</th>
                 <th className="px-5 py-3.5">Category</th>
                 <th className="px-5 py-3.5">Badges</th>
                 <th className="px-5 py-3.5">Tags</th>
@@ -161,81 +183,89 @@ export default function AdminWebsites({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.map((site) => (
-                <tr key={site.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="px-5 py-3.5 flex items-center gap-3">
-                    <BrandIcon type={site.iconType} name={site.name} size="small" />
-                    <div>
-                      <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                        {site.name}
-                        <a href={site.url} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-sky-600">
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
-                      </div>
-                      <p className="text-xs text-slate-400 line-clamp-1 max-w-xs">{site.description}</p>
-                    </div>
-                  </td>
-
-                  <td className="px-5 py-3.5">
-                    <span className="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-semibold">
-                      {site.category}
-                    </span>
-                  </td>
-
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-1.5">
-                      {site.popular && (
-                        <span title="Popular" className="p-1 rounded bg-purple-50 text-purple-600">
-                          <Sparkles className="w-3.5 h-3.5" />
-                        </span>
-                      )}
-                      {site.trending && (
-                        <span title="Trending" className="p-1 rounded bg-amber-50 text-amber-600">
-                          <TrendingUp className="w-3.5 h-3.5" />
-                        </span>
-                      )}
-                      {site.new && (
-                        <span title="New" className="p-1 rounded bg-emerald-50 text-emerald-600">
-                          <Clock className="w-3.5 h-3.5" />
-                        </span>
-                      )}
-                    </div>
-                  </td>
-
-                  <td className="px-5 py-3.5">
-                    <div className="flex flex-wrap gap-1 max-w-xs">
-                      {(site.tags || []).map((t, idx) => (
-                        <span key={idx} className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-
-                  <td className="px-5 py-3.5 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <button 
-                        onClick={() => openEditModal(site)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-sky-600 hover:bg-slate-100 transition"
-                        title="Edit Website"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => {
-                          if (confirm(`"${site.name}" saytini o'chirishni xohlaysizmi?`)) {
-                            onDeleteWebsite(site.id);
-                          }
-                        }}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                        title="Delete Website"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center text-slate-400">
+                    Hozircha hech qanday sayt mavjud emas. Yuqoridagi "+ Add Website" tugmasi orqali yangi sayt qo'shing.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filtered.map((site) => (
+                  <tr key={site.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="px-5 py-3.5 flex items-center gap-3">
+                      <BrandIcon type={site.iconType} name={site.name} logoUrl={site.logoUrl} size="small" />
+                      <div>
+                        <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                          {site.name}
+                          <a href={site.url} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-sky-600">
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
+                        <p className="text-xs text-slate-400 line-clamp-1 max-w-xs">{site.description}</p>
+                      </div>
+                    </td>
+
+                    <td className="px-5 py-3.5">
+                      <span className="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-semibold">
+                        {site.category}
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-1.5">
+                        {site.popular && (
+                          <span title="Popular" className="p-1 rounded bg-purple-50 text-purple-600">
+                            <Sparkles className="w-3.5 h-3.5" />
+                          </span>
+                        )}
+                        {site.trending && (
+                          <span title="Trending" className="p-1 rounded bg-amber-50 text-amber-600">
+                            <TrendingUp className="w-3.5 h-3.5" />
+                          </span>
+                        )}
+                        {site.new && (
+                          <span title="New" className="p-1 rounded bg-emerald-50 text-emerald-600">
+                            <Clock className="w-3.5 h-3.5" />
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    <td className="px-5 py-3.5">
+                      <div className="flex flex-wrap gap-1 max-w-xs">
+                        {(site.tags || []).map((t, idx) => (
+                          <span key={idx} className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+
+                    <td className="px-5 py-3.5 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button 
+                          onClick={() => openEditModal(site)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-sky-600 hover:bg-slate-100 transition"
+                          title="Edit Website"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => {
+                            if (confirm(`"${site.name}" saytini o'chirishni xohlaysizmi?`)) {
+                              onDeleteWebsite(site.id);
+                            }
+                          }}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                          title="Delete Website"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -291,14 +321,52 @@ export default function AdminWebsites({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Website URL</label>
-                <input 
-                  type="text" 
-                  required 
-                  value={formData.url}
-                  onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                  placeholder="https://claude.ai"
-                  className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-sky-500"
-                />
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    required 
+                    value={formData.url}
+                    onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                    placeholder="https://claude.ai"
+                    className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-sky-500"
+                  />
+                  <button 
+                    type="button"
+                    onClick={autoFetchFavicon}
+                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center gap-1.5 transition flex-shrink-0"
+                    title="Generate Logo URL automatically from domain"
+                  >
+                    <Wand2 className="w-3.5 h-3.5 text-sky-600" />
+                    Auto Logo
+                  </button>
+                </div>
+              </div>
+
+              {/* Logo URL Input & Live Preview */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Logo Image URL</label>
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="url" 
+                    value={formData.logoUrl}
+                    onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
+                    placeholder="https://example.com/logo.png or SVG URL"
+                    className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-sky-500"
+                  />
+                  {formData.logoUrl && (
+                    <div className="w-10 h-10 rounded-xl border border-slate-200 p-1 bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                      <img 
+                        src={formData.logoUrl} 
+                        alt="Preview" 
+                        className="w-full h-full object-contain"
+                        onError={(e) => { e.currentTarget.src = ''; }}
+                      />
+                    </div>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Har qanday to'g'ridan-to'g'ri rasm havolasini kiriting yoki "Auto Logo" tugmasini bosing.
+                </p>
               </div>
 
               <div>
@@ -325,13 +393,13 @@ export default function AdminWebsites({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Brand Icon Type</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Brand Icon Preset (Optional)</label>
                   <select 
                     value={formData.iconType}
                     onChange={(e) => setFormData({ ...formData, iconType: e.target.value })}
                     className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-sky-500 bg-white"
                   >
-                    <option value="custom">Auto (Letters/Gradient)</option>
+                    <option value="custom">Auto Letters / Custom</option>
                     <option value="chatgpt">ChatGPT</option>
                     <option value="figma">Figma</option>
                     <option value="notion">Notion</option>
